@@ -991,8 +991,10 @@ pub mod engine {
                             // Integrate witness as a first-class Value (struct) rather than a JSON string.
                             env.insert(name.clone(), phi_witness_to_value(&w));
                         } else {
-                            // No other Φ statements are executed in v0.1.
-                            env.insert(name.clone(), Value::Unit);
+                            // v0.1: allow ordinary Let evaluation in host-mode so Φ intrinsics
+                            // can consume previously-bound values (e.g., digest strings).
+                            let v = expr::eval(e, env)?;
+                            env.insert(name.clone(), v);
                         }
                         Ok(())
                     }
