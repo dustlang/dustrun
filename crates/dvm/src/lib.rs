@@ -735,11 +735,11 @@ pub mod engine {
             })?;
 
             let mut env = IndexMap::<String, Value>::new();
-            for p in &proc_.params {
+            if !proc_.params.is_empty() {
                 return Err(DvmFault::new(
                     DvmError::Runtime(format!(
                         "entrypoint has params in v0.1 host-runner: {}:{}",
-                        p.name, p.ty
+                        proc_.name, proc_.regime
                     )),
                     EffectLog::default(),
                     TimeState::default(),
