@@ -32,19 +32,35 @@ Rules:
 
 ───────────────────────────────────────────────────────────────────────────────
 
-1.2 Failure Trace
+1.2 Failure Trace (With Optional Partial Context)
 
 {
   "error": {
     "kind": "<ErrorKind>",
     "message": "<stable message>"
+  },
+
+  "effects": {
+    "events": [ <effect-event> ... ]
+  },
+
+  "time": {
+    "tick": <u64>
   }
 }
 
 Rules:
-- Failure traces represent semantic refusal to execute or deterministic runtime failure.
+- `effects` and `time` are OPTIONAL.
+- If present, they represent deterministic partial context accumulated prior to refusal/failure.
+- If not present, consumers must treat them as absent (not as empty-by-default).
 - Error messages must be stable across executions.
 - Error messages must not include incidental formatting, stack traces, or host-specific data.
+
+Interpretation:
+- Failure traces represent semantic refusal to execute (inadmissibility, unsupported regime),
+  or deterministic runtime/validation failure.
+- Optional partial context exists to support auditability and debugging in constraint-first systems
+  without compromising determinism.
 
 ───────────────────────────────────────────────────────────────────────────────
 
@@ -114,7 +130,7 @@ Logical time is represented as a monotonic counter.
 }
 
 Rules:
-- `tick` increments once per executed statement.
+- `tick` increments once per executed statement (v0.1 rule).
 - Tick behavior is deterministic and architecture-independent.
 - No wall-clock or real-time data may appear in traces.
 
