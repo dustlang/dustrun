@@ -598,7 +598,9 @@ pub use regime::*;
 pub mod engine {
     use super::{
         admissibility, dir::DirStmt, effects::EffectMode, effects::EffectLog, expr,
-        regime::{phi_refuse_execution, phi_validate_proc, PhiValidation, QState},
+        regime::{
+            phi_refuse_execution, phi_validate_proc, PhiValidation, PhiWitnessBuilder, QState,
+        },
         time::TimeState, DirProgram, DirProc, DvmError, Value,
     };
     use indexmap::IndexMap;
@@ -732,7 +734,6 @@ pub mod engine {
         fn exec_q(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmError> {
             let mut effects = EffectLog::default();
             let mut time = TimeState::default();
-
             let mut q = QState::new();
 
             for stmt in &proc_.body {
@@ -795,11 +796,60 @@ pub mod engine {
         }
 
         fn exec_phi(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmError> {
-            // v0.1: validate constraints (local host-mode) then refuse execution deterministically.
-            match phi_validate_proc(proc_, env)? {
-                PhiValidation::LocallyAdmissible => Err(phi_refuse_execution()),
-                PhiValidation::LocallyInadmissible { message } => Err(DvmError::Inadmissible(message)),
+            // v0.1: validate constraints (local host-mode) then refuse execution deterministically,
+            // but allow construction of Φ witness stubs as a host intrinsic.
+            let validation = phi_validate_proc(proc_, env)?;
+            if let PhiValidation::LocallyInadmissible { message } = validation {
+                return Err(DvmError::Inadmissible(message));
             }
+
+            // Locally admissible: scan for witness stub requests before refusing.
+            let mut effects = EffectLog::default();
+            let mut time = TimeState::default();
+            let mut builder = PhiWitnessBuilder::new();
+
+            for stmt in &proc_.body {
+                if self.cfg.trace {
+                    log::info!("tick={} stmt={:?}", time.tick.0, stmt);
+                }
+
+                match stmt {
+                    DirStmt::Let { name, expr: e } => {
+                        if let Some(digest) = parse_phi_witness(e) {
+                            // Deterministic stub witness.
+                            let w = builder.admissible(&digest);
+                            // Encode witness as a stable string to avoid extending Value schema yet.
+                            // (We can move to Value::Struct later with trace-schema versioning.)
+                            let js = serde_json::to_string(&w).map_err(|err| {
+                                DvmError::Runtime(format!("phi witness serialization failed: {err}"))
+                            })?;
+                            env.insert(name.clone(), Value::String(js));
+                        } else {
+                            // No other Φ statements are executed in v0.1.
+                            env.insert(name.clone(), Value::Unit);
+                        }
+                    }
+                    DirStmt::Effect { kind, payload } => {
+                        // Effects can still be logged (simulate) for debugging workflow.
+                        let rendered = render_payload(payload, env)?;
+                        effects.push(kind.clone(), rendered);
+                    }
+                    DirStmt::Constrain { .. } => {
+                        // already validated above; no-op here
+                    }
+                    DirStmt::Prove { .. } => {
+                        // witness/proof wiring is future work; no-op in v0.1
+                    }
+                    DirStmt::Return { .. } => {
+                        // Φ execution is not implemented; we refuse below.
+                    }
+                }
+
+                time.step();
+            }
+
+            // Canonical refusal for Φ execution in v0.1.
+            Err(phi_refuse_execution())
         }
     }
 
@@ -871,6 +921,11 @@ pub mod engine {
 
     fn parse_q_consume(expr: &str) -> Option<String> {
         parse_call_1(expr, "q_consume").filter(|s| !s.is_empty())
+    }
+
+    fn parse_phi_witness(expr: &str) -> Option<String> {
+        // phi_witness("digest")
+        parse_call_1(expr, "phi_witness").filter(|s| !s.is_empty())
     }
 }
 
