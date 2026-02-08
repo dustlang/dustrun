@@ -1,9 +1,9 @@
-# File: crates/dustrun/src/args.rs
-#
-# Command-line argument definitions for the `dustrun` executable.
-#
-# This file defines the public CLI contract only.
-# It does NOT contain execution logic or semantics.
+// File: crates/dustrun/src/args.rs
+//
+// Command-line argument definitions for the `dustrun` executable.
+//
+// This file defines the public CLI contract only.
+:/ It does NOT contain execution logic or semantics.
 
 use clap::{Parser, ValueEnum};
 
