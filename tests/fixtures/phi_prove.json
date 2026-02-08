@@ -1,0 +1,8 @@
+{
+  "name": "phi_prove",
+  "dir": "dir/phi_prove.dir.json",
+  "entry": "main",
+  "effects": "simulate",
+  "trace": false,
+  "expect_error": "../golden/phi_prove.trace.json"
+}
