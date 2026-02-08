@@ -8,7 +8,7 @@
 //! This crate contains NO compiler logic and NO CLI logic.
 //! It consumes DIR and produces execution traces or refusal/failure traces.
 
-use indexmap::IndexMap;
+// use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 pub mod error {
@@ -1061,6 +1061,7 @@ pub mod engine {
         })
     }
 
+    #[allow(dead_code)]
     fn value_to_string(v: &Value) -> String {
         match v {
             Value::Int(n) => n.to_string(),
@@ -1133,11 +1134,11 @@ pub mod engine {
         }
     }
 
-    fn phi_digest_of_predicate(pred: &str) -> String {
+    // fn phi_digest_of_predicate(pred: &str) -> String {
         // v0.1 digest is a stable textual encoding.
         // Future versions can switch to canonical AST hashing with versioning.
-        format!("pred:{pred}")
-    }
+        // format!("pred:{pred}")
+    // }
 }
 
 pub use engine::{Dvm, DvmConfig, DvmFault, DvmOutcome};
