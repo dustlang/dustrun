@@ -20,11 +20,13 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 fn fixture_root() -> PathBuf {
-    // Workspace layout: crates/conformance/tests/ -> ../../tests/fixtures (repo root)
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent().unwrap()
-        .parent().unwrap()
-        .join("tests").join("fixtures")
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("tests")
+        .join("fixtures")
 }
 
 fn list_fixture_files(root: &Path) -> Vec<PathBuf> {
