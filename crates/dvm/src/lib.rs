@@ -489,7 +489,6 @@ pub mod expr {
             Tok::Bool(b) => Ok(Value::Bool(b)),
             Tok::Str(s) => Ok(Value::String(s)),
             Tok::Ident(id) => {
-                // identifier lookup
                 if let Some(v) = env.get(&id) {
                     Ok(v.clone())
                 } else {
@@ -527,6 +526,9 @@ pub mod admissibility {
         if ok { Ok(()) } else { Err(DvmError::Inadmissible(format!("constraint failed: {predicate}"))) }
     }
 }
+
+pub mod regime;
+pub use regime::*;
 
 pub mod engine {
     use super::{
@@ -602,15 +604,14 @@ pub mod engine {
                 .ok_or_else(|| DvmError::EntrypointNotFound(entry.to_string()))?;
 
             let mut env = IndexMap::<String, Value>::new();
-            // v0.1: no external argument passing here; CLI will handle later.
             for p in &proc_.params {
                 return Err(DvmError::Runtime(format!("entrypoint has params in v0.1 host-runner: {}:{}", p.name, p.ty)));
             }
 
             match proc_.regime.as_str() {
                 "K" => self.exec_k(proc_, &mut env),
-                "Q" => Err(DvmError::UnsupportedRegime("Q-regime execution requires host-mode resource plumbing (next step)".into())),
-                "Φ" => Err(DvmError::UnsupportedRegime("Φ-regime execution requires witness/admissibility plumbing (next step)".into())),
+                "Q" => Err(DvmError::UnsupportedRegime("Q-regime execution wiring into engine is next step".into())),
+                "Φ" => Err(DvmError::UnsupportedRegime("Φ-regime execution wiring into engine is next step".into())),
                 other => Err(DvmError::UnsupportedRegime(format!("unknown regime: {other}"))),
             }
         }
@@ -633,19 +634,16 @@ pub mod engine {
                         admissibility::check_predicate(predicate, env)?;
                     }
                     DirStmt::Prove { name, from } => {
-                        // v0.1: "prove" creates a named witness value (Unit) if predicate holds.
                         admissibility::check_predicate(from, env)?;
                         env.insert(name.clone(), Value::Unit);
                     }
                     DirStmt::Effect { kind, payload } => {
-                        // Effects are explicitly logged in both modes. Realization is a future step.
                         let rendered = render_payload(payload, env)?;
                         effects.push(kind.clone(), rendered);
                         match self.cfg.effect_mode {
                             EffectMode::Simulate => { /* log only */ }
                             EffectMode::Realize => {
-                                // v0.1: realization is not yet wired (will be implemented via an EffectRealizer trait).
-                                // For now, we still remain operational: realization is treated as logging-only unless a realizer is configured.
+                                // v0.1: realization is logging-only unless a realizer is configured (future step).
                             }
                         }
                     }
@@ -674,9 +672,6 @@ pub mod engine {
     }
 
     fn render_payload(payload_expr: &str, env: &IndexMap<String, Value>) -> Result<String, DvmError> {
-        // For emit/seal/observe payloads, we prefer a stable rendering:
-        // - if it's a string literal, return the string itself
-        // - otherwise evaluate and format Value deterministically
         let v = expr::eval(payload_expr, env)?;
         Ok(match v {
             Value::String(s) => s,
