@@ -1,0 +1,10 @@
+# File: tests/fixtures/q_linearity.json
+
+{
+  "name": "q_linearity",
+  "dir": "dir/q_linearity.dir.json",
+  "entry": "main",
+  "effects": "simulate",
+  "trace": false,
+  "expect_trace": "../golden/q_linearity.trace.json"
+}
