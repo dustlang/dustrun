@@ -1,0 +1,33 @@
+# File: crates/conformance/Cargo.toml
+# Spec-aligned conformance harness for dustrun / DVM.
+#
+# This crate exists to enforce semantic stability:
+# - run DIR fixtures through dust-dvm
+# - compare deterministic traces to golden outputs
+# - provide a stable conformance surface for future backends
+
+[package]
+name = "dustrun-conformance"
+version = "0.1.0"
+description = "Conformance harness for Dust Virtual Machine (DVM) semantics"
+license = "DOSL"
+edition = "2021"
+authors = ["Dust Research Division <research@dustlang.org>"]
+repository = "https://github.com/dustlang/dustrun"
+rust-version = "1.75"
+
+[lib]
+name = "dustrun_conformance"
+path = "src/lib.rs"
+
+[dependencies]
+dust-dvm = { path = "../dvm" }
+
+# Workspace dependencies
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+indexmap = { workspace = true }
+
+[dev-dependencies]
+pretty_assertions = { workspace = true }
