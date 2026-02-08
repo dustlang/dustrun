@@ -4,5 +4,5 @@
   "entry": "main",
   "effects": "simulate",
   "trace": false,
-  "expect_error": "../golden/phi_prove.trace.json"
+  "expect_error": "../golden/phi_prove_error.trace.json"
 }
