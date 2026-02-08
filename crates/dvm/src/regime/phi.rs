@@ -6,11 +6,11 @@
 //! Responsibilities in v0.1:
 //! - Recognize Φ-regime as a distinct regime.
 //! - Provide deterministic, semantically meaningful refusal for execution.
-//! - Provide hooks for future admissibility witness generation.
+//! - Provide hooks for admissibility witness generation.
 //!
-//! The key idea is that Φ-regime programs must be globally admissible.
-//! In v0.1 we can only do local, deterministic checks and then return a
-//! stable "not yet executable" outcome.
+//! In v0.1, witnesses are **stub artifacts** with deterministic structure.
+//! They are produced for `Prove` and `phi_witness(...)` but do not constitute
+//! global proofs.
 
 use crate::DvmError;
 use crate::{admissibility, DirProc, Value};
@@ -30,15 +30,9 @@ pub enum PhiValidation {
 ///
 /// Current v0.1 rules:
 /// - Evaluate each `Constrain { predicate }` against the provided environment.
-/// - `Let`/`Effect`/`Return` are not evaluated here (Φ execution not implemented).
 ///
 /// This is intentionally conservative: it only validates that constraints are
 /// well-formed and true under the current environment assumptions.
-///
-/// Future revisions will:
-/// - incorporate global constraint graphs,
-/// - incorporate witness construction,
-/// - incorporate non-existence proofs.
 pub fn validate_proc(proc_: &DirProc, env: &IndexMap<String, Value>) -> Result<PhiValidation, DvmError> {
     if proc_.regime != "Φ" {
         return Err(DvmError::Runtime(format!(
@@ -53,7 +47,6 @@ pub fn validate_proc(proc_: &DirProc, env: &IndexMap<String, Value>) -> Result<P
                 match admissibility::check_predicate(predicate, env) {
                     Ok(()) => {}
                     Err(e) => {
-                        // Collapse all local failures into a deterministic validation result.
                         let msg = match e {
                             DvmError::Inadmissible(s) => s,
                             DvmError::ConstraintFailure(s) => s,
@@ -63,8 +56,6 @@ pub fn validate_proc(proc_: &DirProc, env: &IndexMap<String, Value>) -> Result<P
                     }
                 }
             }
-            // In validation-only mode we ignore other statements;
-            // they will become meaningful when Φ execution is implemented.
             _ => {}
         }
     }
