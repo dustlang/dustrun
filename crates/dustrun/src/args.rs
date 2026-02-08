@@ -3,7 +3,7 @@
 // Command-line argument definitions for the `dustrun` executable.
 //
 // This file defines the public CLI contract only.
-:/ It does NOT contain execution logic or semantics.
+// It does NOT contain execution logic or semantics.
 
 use clap::{Parser, ValueEnum};
 
