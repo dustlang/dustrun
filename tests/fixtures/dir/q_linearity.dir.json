@@ -1,0 +1,27 @@
+# File: tests/fixtures/dir/q_linearity.dir.json
+
+{
+  "forges": [
+    {
+      "name": "qcore",
+      "shapes": [],
+      "procs": [
+        {
+          "regime": "Q",
+          "name": "main",
+          "params": [],
+          "uses": [],
+          "ret": "Int",
+          "qualifiers": [],
+          "body": [
+            { "Let": { "name": "a", "expr": "q_alloc(QBit)" } },
+            { "Let": { "name": "b", "expr": "q_move(a)" } },
+            { "Let": { "name": "x", "expr": "q_use(a)" } },
+            { "Return": { "expr": "0" } }
+          ]
+        }
+      ],
+      "binds": []
+    }
+  ]
+}
