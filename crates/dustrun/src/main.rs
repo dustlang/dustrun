@@ -96,7 +96,8 @@ fn main() {
 fn init_logging() {
     // env_logger is deterministic given fixed inputs; we avoid timestamps by default.
     // Users can still opt-in via RUST_LOG and env_logger formatting, but default is stable.
-    let mut builder = env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn"));
+    let mut builder =
+        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn"));
 
     // Remove timestamps for deterministic output
     builder.format(|buf, record| {
