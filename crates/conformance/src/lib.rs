@@ -117,15 +117,9 @@ impl Fixture {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct RunnerConfig {
     pub bless: bool,
-}
-
-impl Default for RunnerConfig {
-    fn default() -> Self {
-        Self { bless: false }
-    }
 }
 
 pub struct Runner {
