@@ -1,0 +1,8 @@
+{
+  "name": "phi_inadmissible",
+  "dir": "dir/phi_inadmissible.dir.json",
+  "entry": "main",
+  "effects": "simulate",
+  "trace": false,
+  "expect_error": "../golden/phi_inadmissible.trace.json"
+}
