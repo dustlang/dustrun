@@ -1,0 +1,26 @@
+{
+  "forges": [
+    {
+      "name": "phicore",
+      "shapes": [],
+      "procs": [
+        {
+          "regime": "Φ",
+          "name": "main",
+          "params": [],
+          "uses": [],
+          "ret": "Int",
+          "qualifiers": [],
+          "body": [
+            { "Constrain": { "predicate": "true" } },
+            { "Let": { "name": "d", "expr": "\"digest:var\"" } },
+            { "Let": { "name": "w", "expr": "phi_witness(d)" } },
+            { "Effect": { "kind": "emit", "payload": "w" } },
+            { "Return": { "expr": "1" } }
+          ]
+        }
+      ],
+      "binds": []
+    }
+  ]
+}
