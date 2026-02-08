@@ -1,0 +1,25 @@
+{
+  "forges": [
+    {
+      "name": "qcore",
+      "shapes": [],
+      "procs": [
+        {
+          "regime": "Q",
+          "name": "main",
+          "params": [],
+          "uses": [],
+          "ret": "Int",
+          "qualifiers": [],
+          "body": [
+            { "Let": { "name": "a", "expr": "q_alloc(QBit)" } },
+            { "Let": { "name": "b", "expr": "q_move(a)" } },
+            { "Effect": { "kind": "emit", "payload": "\"Q ok\"" } },
+            { "Return": { "expr": "7" } }
+          ]
+        }
+      ],
+      "binds": []
+    }
+  ]
+}
