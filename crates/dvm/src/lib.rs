@@ -1044,6 +1044,8 @@ pub mod engine {
     }
 
     fn parse_phi_witness(expr: &str) -> Option<String> {
+        // Accept a single-argument call: phi_witness(<arg_expr>)
+        // Return the raw argument expression (not evaluated here).
         parse_call_1(expr, "phi_witness").filter(|s| !s.is_empty())
     }
 }
