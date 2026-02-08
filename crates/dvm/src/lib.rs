@@ -1062,8 +1062,7 @@ pub mod engine {
     }
 
     #[allow(dead_code)]
-    fn value_to_string<V: AsRef<Value>>(v: V) -> String {
-        let v = v.as_ref();
+    fn value_to_string(v: &Value) -> String {
         match v {
             Value::Int(n) => n.to_string(),
             Value::Bool(b) => b.to_string(),
