@@ -6,5 +6,5 @@
   "entry": "main",
   "effects": "simulate",
   "trace": false,
-  "expect_trace": "../golden/q_linearity.trace.json"
+  "expect_error": "../golden/q_linearity.trace.json"
 }
