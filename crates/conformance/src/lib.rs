@@ -1,14 +1,14 @@
 // File: crates/conformance/src/lib.rs
-#
-# Conformance harness for DVM semantics.
-#
-# Purpose:
-# - Execute DIR fixtures through dust-dvm deterministically
-# - Emit traces
-# - Compare traces against golden expectations
-#
-# This crate is non-normative with respect to language semantics.
-# It is normative for conformance enforcement within the dustrun repository.
+//
+// Conformance harness for DVM semantics.
+//
+// Purpose:
+// - Execute DIR fixtures through dust-dvm deterministically
+// - Emit traces
+// - Compare traces against golden expectations
+//
+// This crate is non-normative with respect to language semantics.
+// It is normative for conformance enforcement within the dustrun repository.
 
 use dust_dvm::{Dvm, DvmConfig, DvmError, DvmTrace, EffectMode};
 use serde::{Deserialize, Serialize};
