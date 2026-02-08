@@ -33,33 +33,21 @@ pub enum ConformanceError {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Fixture {
-    /// Human-readable name for the test case.
     pub name: String,
-
-    /// Relative path to DIR JSON file (from fixture file directory).
     pub dir: String,
 
-    /// Entrypoint proc name.
     #[serde(default = "default_entry")]
     pub entry: String,
 
-    /// Effect mode: "simulate" or "realize"
     #[serde(default = "default_effects")]
     pub effects: String,
 
-    /// Whether to enable DVM trace logging (does not affect trace JSON content).
     #[serde(default)]
     pub trace: bool,
 
-    /// Relative path to expected trace JSON file (success case).
-    ///
-    /// Exactly one of expect_trace or expect_error must be present.
     #[serde(default)]
     pub expect_trace: Option<String>,
 
-    /// Relative path to expected error JSON file (failure case).
-    ///
-    /// Exactly one of expect_trace or expect_error must be present.
     #[serde(default)]
     pub expect_error: Option<String>,
 }
@@ -131,9 +119,6 @@ impl Fixture {
 
 #[derive(Debug, Clone)]
 pub struct RunnerConfig {
-    /// If true, rewrite golden expectations to match current behavior.
-    /// This should only be used when intentionally updating semantics
-    /// or improving the trace format in a controlled versioned change.
     pub bless: bool,
 }
 
@@ -154,10 +139,7 @@ pub struct ExpectedError {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ExpectedErrorBody {
-    /// Canonical error kind string (e.g., "Inadmissible", "ConstraintFailure", "Runtime", ...)
     pub kind: String,
-
-    /// Exact message match (deterministic). This is the primary enforcement mode.
     pub message: String,
 }
 
@@ -173,13 +155,11 @@ impl Runner {
         Self { cfg }
     }
 
-    /// Load a fixture from JSON file.
     pub fn load_fixture(path: impl AsRef<Path>) -> Result<Fixture, ConformanceError> {
         let bytes = fs::read(path)?;
         Ok(serde_json::from_slice(&bytes)?)
     }
 
-    /// Execute a fixture and return either a success trace or a structured error.
     pub fn run_fixture(
         &self,
         fixture_file: impl AsRef<Path>,
@@ -197,9 +177,7 @@ impl Runner {
 
         let program = match dvm.load_dir_json(&dir_bytes) {
             Ok(p) => p,
-            Err(e) => {
-                return Ok(Produced::Failure(map_dvm_error(e)));
-            }
+            Err(e) => return Ok(Produced::Failure(map_dvm_error(e))),
         };
 
         match dvm.run_entrypoint(&program, &fixture.entry) {
@@ -208,8 +186,6 @@ impl Runner {
         }
     }
 
-    /// Compare a produced result against a golden expectation file.
-    /// If `bless` is enabled, rewrite the golden file instead of failing.
     pub fn assert_matches(
         &self,
         fixture_file: impl AsRef<Path>,
@@ -218,10 +194,7 @@ impl Runner {
     ) -> Result<(), ConformanceError> {
         let fixture_file = fixture_file.as_ref();
 
-        // Bless mode: write the produced artifact to whichever golden path is declared.
         if self.cfg.bless {
-            fs::create_dir_all(Path::new("tests/golden")).ok();
-
             if fixture.expect_trace.is_some() {
                 let p = fixture.expect_trace_path(fixture_file)?;
                 fs::create_dir_all(p.parent().unwrap_or_else(|| Path::new(".")))?;
@@ -245,7 +218,6 @@ impl Runner {
             }
         }
 
-        // Non-bless: enforce declared expectation type.
         if fixture.expect_trace.is_some() {
             let golden_path = fixture.expect_trace_path(fixture_file)?;
             let golden_bytes = fs::read(&golden_path)?;
@@ -254,14 +226,13 @@ impl Runner {
             match produced {
                 Produced::Success(t) => {
                     if &golden != t {
-                        let msg = format!(
+                        return Err(ConformanceError::GoldenMismatch(format!(
                             "fixture '{}' produced trace does not match golden.\nfixture_file: {}\ndir: {}\nexpected: {}\n",
                             fixture.name,
                             fixture_file.display(),
                             fixture.dir_path(fixture_file).display(),
                             golden_path.display(),
-                        );
-                        return Err(ConformanceError::GoldenMismatch(msg));
+                        )));
                     }
                     Ok(())
                 }
@@ -283,14 +254,13 @@ impl Runner {
             match produced {
                 Produced::Failure(e) => {
                     if &golden != e {
-                        let msg = format!(
+                        return Err(ConformanceError::GoldenMismatch(format!(
                             "fixture '{}' produced error does not match golden.\nfixture_file: {}\ndir: {}\nexpected: {}\n",
                             fixture.name,
                             fixture_file.display(),
                             fixture.dir_path(fixture_file).display(),
                             golden_path.display(),
-                        );
-                        return Err(ConformanceError::GoldenMismatch(msg));
+                        )));
                     }
                     Ok(())
                 }
@@ -306,7 +276,6 @@ impl Runner {
         }
     }
 
-    /// Convenience: load, run, and compare a fixture file.
     pub fn run_and_check(&self, fixture_file: impl AsRef<Path>) -> Result<(), ConformanceError> {
         let fixture_file = fixture_file.as_ref();
         let fixture = Self::load_fixture(fixture_file)?;
@@ -317,16 +286,21 @@ impl Runner {
 }
 
 fn map_dvm_error(e: DvmError) -> ExpectedError {
-    let (kind, message) = match &e {
-        DvmError::DirLoad(_) => ("DirLoad", e.to_string()),
-        DvmError::DirValidate(_) => ("DirValidate", e.to_string()),
-        DvmError::EntrypointNotFound(_) => ("EntrypointNotFound", e.to_string()),
-        DvmError::UnsupportedRegime(_) => ("UnsupportedRegime", e.to_string()),
-        DvmError::Inadmissible(_) => ("Inadmissible", e.to_string()),
-        DvmError::ConstraintFailure(_) => ("ConstraintFailure", e.to_string()),
-        DvmError::EffectViolation(_) => ("EffectViolation", e.to_string()),
-        DvmError::TimeViolation(_) => ("TimeViolation", e.to_string()),
-        DvmError::Runtime(_) => ("Runtime", e.to_string()),
+    // IMPORTANT: Use inner messages for stability.
+    // We do NOT use `e.to_string()` because it includes outer formatting such as:
+    // "inadmissible program: <msg>"
+    //
+    // The conformance surface wants the canonical inner message for deterministic matching.
+    let (kind, message) = match e {
+        DvmError::DirLoad(s) => ("DirLoad", s),
+        DvmError::DirValidate(s) => ("DirValidate", s),
+        DvmError::EntrypointNotFound(s) => ("EntrypointNotFound", s),
+        DvmError::UnsupportedRegime(s) => ("UnsupportedRegime", s),
+        DvmError::Inadmissible(s) => ("Inadmissible", s),
+        DvmError::ConstraintFailure(s) => ("ConstraintFailure", s),
+        DvmError::EffectViolation(s) => ("EffectViolation", s),
+        DvmError::TimeViolation(s) => ("TimeViolation", s),
+        DvmError::Runtime(s) => ("Runtime", s),
     };
 
     ExpectedError {
@@ -335,4 +309,4 @@ fn map_dvm_error(e: DvmError) -> ExpectedError {
             message,
         },
     }
-}
+}}
