@@ -60,7 +60,7 @@ fn main() {
     };
 
     if args.emit_trace {
-        let trace: DvmTrace = outcome.into();
+        let trace: DvmTrace = DvmTrace::Success(outcome.into());
         match serde_json::to_string_pretty(&trace) {
             Ok(s) => {
                 println!("{s}");
