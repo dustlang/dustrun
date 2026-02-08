@@ -13,7 +13,7 @@
           "qualifiers": [],
           "body": [
             { "Constrain": { "predicate": "true" } },
-            { "Prove": { "name": "p", "from": "Eq(1,1)" } },
+            { "Prove": { "name": "p", "from": "1 Eq 1" } },
             { "Effect": { "kind": "emit", "payload": "p" } },
             { "Return": { "expr": "1" } }
           ]
