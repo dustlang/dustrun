@@ -12,9 +12,8 @@
           "ret": "Int",
           "qualifiers": [],
           "body": [
-            { "Let": { "name": "msg", "expr": "\"Hello, Dust\"" } },
-            { "Effect": { "kind": "emit", "payload": "msg" } },
-            { "Return": { "expr": "42" } }
+            { "Effect": { "kind": "emit", "payload": "\"Hello, Dust!\"" } },
+            { "Return": { "expr": "0" } }
           ]
         }
       ],
