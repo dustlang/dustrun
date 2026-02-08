@@ -20,14 +20,12 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 fn fixture_root() -> PathBuf {
-    // Workspace layout: crates/conformance/tests/ -> ../../../tests/fixtures
+    // Workspace layout: crates/conformance/tests/ -> ../../tests/fixtures (repo root)
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap() // crates/conformance
         .parent()
         .unwrap() // crates
-        .parent()
-        .unwrap() // repo root
         .join("tests")
         .join("fixtures")
 }
