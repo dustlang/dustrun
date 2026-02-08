@@ -67,7 +67,7 @@ If a program is **inadmissible**, `dustrun` does not partially execute it.
 
 ---
 
-## What `dustrun` Does *Not* Do
+## What `dustrun` Does Not Do
 
 `dustrun` does **not**:
 
@@ -84,12 +84,103 @@ Those responsibilities belong elsewhere in the DPL toolchain.
 
 ## Repository Structure
 
-```text
 dustrun/
 ├── crates/
-│   ├── dvm/        # DVM core: execution semantics, regimes, admissibility
-│   ├── dustrun/    # CLI binary (produces the `dustrun` executable)
-│   └── conformance/# Spec-aligned conformance test harness
-├── tests/          # Deterministic fixtures and golden traces
-├── docs/           # Non-normative architecture and usage notes
-└── Cargo.toml      # Workspace root
+│   ├── dvm/         # DVM core: execution semantics, regimes, admissibility
+│   ├── dustrun/     # CLI binary (produces the `dustrun` executable)
+│   └── conformance/ # Spec-aligned conformance test harness
+├── tests/           # Deterministic fixtures and golden traces
+├── docs/            # Non-normative architecture and usage notes
+└── Cargo.toml       # Workspace root
+
+- **crates/dvm** is the authoritative implementation of DVM semantics.
+- **crates/dustrun** is a thin command-line interface over the DVM.
+- **crates/conformance** ensures alignment with the DPL specification.
+
+---
+
+## Typical Usage
+
+Reference execution:
+
+dustrun program.dir
+
+Simulation mode (effects are logged, not realized):
+
+dustrun --simulate program.dir
+
+Deterministic replay:
+
+dustrun --replay trace.json
+
+---
+
+## Conformance Rule
+
+Any execution backend, including native binaries produced by `dustc`, is considered **correct** only if:
+
+- it admits exactly the same executions,
+- it rejects exactly the same inadmissible programs,
+- it preserves effect ordering and irreversibility,
+- it respects time and regime semantics,
+
+as execution via `dustrun`.
+
+If there is disagreement, **dustrun is correct**.
+
+---
+
+## Implementation Language
+
+`dustrun` is implemented in **Rust** to provide:
+
+- deterministic behavior,
+- strong correctness guarantees,
+- portability,
+- integration with existing systems tooling.
+
+A future self-hosting implementation in DPL is possible, but only after full semantic parity is provably achieved.
+
+---
+
+## Status
+
+- DVM semantics: **In active development**
+- CLI stability: **Pre-v1**
+- Performance: **Not a goal**
+- Semantic correctness: **Primary goal**
+
+`dustrun` prioritizes correctness, determinism, and semantic fidelity over speed.
+
+---
+
+## License
+
+`dustrun` is released under the **Dust Open Source License (DOSL)**.
+
+See the LICENSE file for full terms.
+
+---
+
+## Relationship to the DPL Specification
+
+The DPL specification (located in the spec/ directory of the main DPL repository) is **canonical**.
+
+This repository:
+- implements the specification,
+- does not redefine it,
+- and must be updated if the specification changes.
+
+If behavior here conflicts with the spec, **this code is wrong**.
+
+---
+
+## Final Note
+
+Without a Dust Virtual Machine, DPL would be untestable, unverifiable, and unusable for most developers today.
+
+`dustrun` exists to ensure that DPL programs can be written, tested, reasoned about, and trusted—long before specialized hardware becomes commonplace.
+
+---
+
+© 2026 Dust LLC
