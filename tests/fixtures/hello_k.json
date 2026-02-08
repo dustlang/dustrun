@@ -1,0 +1,10 @@
+# File: tests/fixtures/hello_k.json
+
+{
+  "name": "hello_k",
+  "dir": "dir/hello_k.dir.json",
+  "entry": "main",
+  "effects": "simulate",
+  "trace": false,
+  "expect_trace": "../golden/hello_k.trace.json"
+}
