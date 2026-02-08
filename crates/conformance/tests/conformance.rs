@@ -55,7 +55,11 @@ fn conformance_fixtures_match_golden() {
     let root = fixture_root();
     let files = list_fixture_files(&root);
 
-    assert!(!files.is_empty(), "no fixture files found in {}", root.display());
+    assert!(
+        !files.is_empty(),
+        "no fixture files found in {}",
+        root.display()
+    );
 
     for f in files {
         runner.run_and_check(&f).unwrap_or_else(|e| {
