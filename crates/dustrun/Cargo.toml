@@ -1,0 +1,33 @@
+# File: crates/dustrun/Cargo.toml
+# CLI binary crate producing the `dustrun` executable.
+#
+# This crate contains NO DVM semantics.
+# It is a thin command-line interface over the dust-dvm library.
+
+[package]
+name = "dustrun"
+version = "0.1.0"
+description = "Command-line interface for the Dust Virtual Machine (DVM)"
+license = "DOSL"
+edition = "2021"
+authors = ["Dust Research Division <research@dustlang.org>"]
+repository = "https://github.com/dustlang/dustrun"
+rust-version = "1.75"
+
+[[bin]]
+name = "dustrun"
+path = "src/main.rs"
+
+[dependencies]
+# DVM core (semantic authority)
+dust-dvm = { path = "../dvm" }
+
+# Workspace dependencies
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+
+[dev-dependencies]
+pretty_assertions = { workspace = true }
