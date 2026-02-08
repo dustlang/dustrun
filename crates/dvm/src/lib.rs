@@ -179,7 +179,11 @@ pub mod time {
 
     use serde::{Deserialize, Serialize};
 
+    /// A deterministic logical tick counter.
+    ///
+    /// Serialized as a plain integer for stable conformance traces.
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+    #[serde(transparent)]
     pub struct LogicalTick(pub u64);
 
     #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -189,9 +193,7 @@ pub mod time {
 
     impl Default for TimeState {
         fn default() -> Self {
-            Self {
-                tick: LogicalTick(0),
-            }
+            Self { tick: LogicalTick(0) }
         }
     }
 
