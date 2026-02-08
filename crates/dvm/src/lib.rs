@@ -1044,11 +1044,9 @@ pub mod engine {
             Value::String(s) => s,
             Value::Int(n) => n.to_string(),
             Value::Bool(b) => b.to_string(),
-            Value::Struct { .. } => {
-                serde_json::to_string(&v).map_err(|e| {
-                    DvmError::Runtime(format!("failed to render struct payload as json: {e}"))
-                })?
-            }
+            Value::Struct { .. } => serde_json::to_string(&v).map_err(|e| {
+                DvmError::Runtime(format!("failed to render struct payload as json: {e}"))
+            })?,
             Value::Unit => "unit".into(),
         })
     }
@@ -1100,7 +1098,7 @@ pub mod engine {
         // Return the raw argument expression (not evaluated here).
         parse_call_1(expr, "phi_witness").filter(|s| !s.is_empty())
     }
-    
+
     fn phi_witness_to_value(w: &crate::regime::PhiWitness) -> Value {
         use crate::regime::PhiWitnessKind;
 
