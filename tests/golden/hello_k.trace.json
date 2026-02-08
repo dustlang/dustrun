@@ -1,16 +1,16 @@
 {
   "returned": {
-    "Int": 42
+    "Int": 0
   },
   "effects": {
     "events": [
       {
         "kind": "emit",
-        "payload": "Hello, Dust"
+        "payload": "Hello, Dust!"
       }
     ]
   },
   "time": {
-    "tick": 2
+    "tick": 1
   }
 }
