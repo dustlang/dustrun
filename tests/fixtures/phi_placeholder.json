@@ -1,0 +1,8 @@
+{
+  "name": "phi_placeholder",
+  "dir": "dir/phi_placeholder.dir.json",
+  "entry": "main",
+  "effects": "simulate",
+  "trace": false,
+  "expect_error": "../golden/phi_placeholder.trace.json"
+}
