@@ -1005,15 +1005,17 @@ pub mod engine {
                     }
                     DirStmt::Constrain { .. } => Ok(()), // already validated
                     DirStmt::Prove { name, from } => {
-                        // Evaluate and require the predicate to hold in host-mode.
+                        // Require predicate to hold in host-mode.
                         admissibility::check_predicate(from, env)?;
 
-                        // Deterministic witness stub produced from a canonical digest string.
-                        let digest = phi_digest_of_predicate(from);
-                        let w = builder.admissible(&digest);
+                        // Deterministic v0.1 digest of the proved predicate.
+                        let digest = format!("pred:{from}");
 
+                        // Produce a witness stub and inject as a first-class Struct Value.
+                        let w = builder.admissible(&digest);
                         env.insert(name.clone(), phi_witness_to_value(&w));
-                        Ok(())
+
+                        Ok(None)
                     }
                     DirStmt::Return { .. } => Ok(()), // ignored in v0.1
                 };
