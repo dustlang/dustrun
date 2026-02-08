@@ -1,4 +1,4 @@
-EU//! Dust Virtual Machine (DVM) — reference executor for DPL.
+//! Dust Virtual Machine (DVM) — reference executor for DPL.
 //!
 //! This crate implements the normative execution semantics for DIR artifacts:
 //! - K-regime: deterministic classical execution (reference semantics)
