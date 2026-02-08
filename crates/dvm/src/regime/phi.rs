@@ -33,7 +33,10 @@ pub enum PhiValidation {
 ///
 /// This is intentionally conservative: it only validates that constraints are
 /// well-formed and true under the current environment assumptions.
-pub fn validate_proc(proc_: &DirProc, env: &IndexMap<String, Value>) -> Result<PhiValidation, DvmError> {
+pub fn validate_proc(
+    proc_: &DirProc,
+    env: &IndexMap<String, Value>,
+) -> Result<PhiValidation, DvmError> {
     if proc_.regime != "Φ" {
         return Err(DvmError::Runtime(format!(
             "phi::validate_proc called on non-Φ proc '{}'(regime={})",
