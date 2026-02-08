@@ -1,7 +1,7 @@
-# File:_attachment.txt
-# (Note: user requested crates/dustrun/src/main.rs; output below is the file content.)
+// File:_attachment.txt
+// (Note: user requested crates/dustrun/src/main.rs; output below is the file content.)
 
-# File: crates/dustrun/src/main.rs
+// File: crates/dustrun/src/main.rs
 
 mod args;
 
