@@ -7,7 +7,7 @@
     "events": [
       {
         "kind": "emit",
-        "payload": "{\"kind\":\"Admissible\",\"id\":\"Φwitness:1\",\"constraint_digest\":\"\\\"digest:example\\\"\",\"note\":\"Φ witness stub (v0.1): admissible\"}"
+        "payload": "{\"kind\":\"Admissible\",\"id\":\"Φwitness:1\",\"constraint_digest\":\"digest:example\",\"note\":\"Φ witness stub (v0.1): admissible\"}"
       }
     ]
   },
