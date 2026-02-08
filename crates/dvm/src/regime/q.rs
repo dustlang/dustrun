@@ -110,12 +110,10 @@ impl QState {
             )));
         }
 
-        let src_binding = self
-            .env
-            .get(src)
-            .cloned()
-            .ok_or_else(|| DvmError::Inadmissible(format!("Q move failed: unknown binding: {src}")))?;
-
+        let src_binding = self.env.get(src).cloned().ok_or_else(|| {
+            DvmError::Inadmissible(format!("Q move failed: unknown binding: {src}"))
+        })?;
+        
         if src_binding.moved {
             return Err(DvmError::Inadmissible(format!(
                 "Q move failed: binding already moved: {src}"
@@ -148,11 +146,9 @@ impl QState {
     /// - the binding becomes moved (cannot be reused)
     /// - the resource becomes Consumed (cannot be used by any other alias)
     pub fn consume(&mut self, name: &str, reason: &str) -> Result<(), DvmError> {
-        let binding = self
-            .env
-            .get(name)
-            .cloned()
-            .ok_or_else(|| DvmError::Inadmissible(format!("Q consume failed: unknown binding: {name}")))?;
+        let binding = self.env.get(name).cloned().ok_or_else(|| {
+            DvmError::Inadmissible(format!("Q consume failed: unknown binding: {name}"))
+        })?;
 
         if binding.moved {
             return Err(DvmError::Inadmissible(format!(
