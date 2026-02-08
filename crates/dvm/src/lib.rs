@@ -939,10 +939,9 @@ pub mod engine {
                             };
 
                             let w = builder.admissible(&digest);
-                            let js = serde_json::to_string(&w).map_err(|err| {
-                                DvmError::Runtime(format!("phi witness serialization failed: {err}"))
-                            })?;
-                            env.insert(name.clone(), Value::String(js));
+
+                            // Integrate witness as a first-class Value (struct) rather than a JSON string.
+                            env.insert(name.clone(), phi_witness_to_value(&w));
                         } else {
                             // No other Φ statements are executed in v0.1.
                             env.insert(name.clone(), Value::Unit);
@@ -990,13 +989,8 @@ pub mod engine {
             Value::String(s) => s,
             Value::Int(n) => n.to_string(),
             Value::Bool(b) => b.to_string(),
-            Value::Struct { ty, fields } => {
-                let mut parts = Vec::new();
-                for (k, vv) in fields.iter() {
-                    parts.push(format!("{k}:{}", value_to_string(vv)));
-                }
-                format!("{ty}{{{}}}", parts.join(","))
-            }
+            Value::Struct { .. } => serde_json::to_string(&v)
+                .map_err(|e| DvmError::Runtime(format!("failed to render struct payload as json: {e}")))?,
             Value::Unit => "unit".into(),
         })
     }
@@ -1047,6 +1041,30 @@ pub mod engine {
         // Accept a single-argument call: phi_witness(<arg_expr>)
         // Return the raw argument expression (not evaluated here).
         parse_call_1(expr, "phi_witness").filter(|s| !s.is_empty())
+    }
+    
+    fn phi_witness_to_value(w: &crate::regime::PhiWitness) -> Value {
+        use crate::regime::PhiWitnessKind;
+
+        let mut fields = IndexMap::new();
+
+        let kind_str = match w.kind {
+            PhiWitnessKind::Admissible => "Admissible",
+            PhiWitnessKind::NonExistent => "NonExistent",
+        };
+
+        fields.insert("kind".to_string(), Value::String(kind_str.to_string()));
+        fields.insert("id".to_string(), Value::String(w.id.clone()));
+        fields.insert(
+            "constraint_digest".to_string(),
+            Value::String(w.constraint_digest.clone()),
+        );
+        fields.insert("note".to_string(), Value::String(w.note.clone()));
+
+        Value::Struct {
+            ty: "PhiWitness".to_string(),
+            fields,
+        }
     }
 }
 
