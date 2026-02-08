@@ -598,7 +598,8 @@ pub use regime::*;
 pub mod engine {
     use super::{
         admissibility, dir::DirStmt, effects::EffectMode, effects::EffectLog, expr,
-        regime::QState, time::TimeState, DirProgram, DirProc, DvmError, Value,
+        regime::{phi_refuse_execution, phi_validate_proc, PhiValidation, QState},
+        time::TimeState, DirProgram, DirProc, DvmError, Value,
     };
     use indexmap::IndexMap;
 
@@ -634,12 +635,10 @@ pub mod engine {
             Self { cfg }
         }
 
-        /// Load a DIR program from JSON bytes.
         pub fn load_dir_json(&self, bytes: &[u8]) -> Result<DirProgram, DvmError> {
             serde_json::from_slice::<DirProgram>(bytes).map_err(|e| DvmError::DirLoad(format!("{e}")))
         }
 
-        /// Validate basic DIR structure (v0.1).
         pub fn validate_dir(&self, program: &DirProgram) -> Result<(), DvmError> {
             if program.forges.is_empty() {
                 return Err(DvmError::DirValidate("program has no forges".into()));
@@ -660,7 +659,6 @@ pub mod engine {
             Ok(())
         }
 
-        /// Execute an entrypoint proc by name.
         pub fn run_entrypoint(&self, program: &DirProgram, entry: &str) -> Result<DvmOutcome, DvmError> {
             self.validate_dir(program)?;
 
@@ -677,9 +675,7 @@ pub mod engine {
             match proc_.regime.as_str() {
                 "K" => self.exec_k(proc_, &mut env),
                 "Q" => self.exec_q(proc_, &mut env),
-                "Φ" => Err(DvmError::UnsupportedRegime(
-                    "Φ-regime execution wiring into engine is a later step".into(),
-                )),
+                "Φ" => self.exec_phi(proc_, &mut env),
                 other => Err(DvmError::UnsupportedRegime(format!("unknown regime: {other}"))),
             }
         }
@@ -710,9 +706,7 @@ pub mod engine {
                         effects.push(kind.clone(), rendered);
                         match self.cfg.effect_mode {
                             EffectMode::Simulate => {}
-                            EffectMode::Realize => {
-                                // v0.1: realization is logging-only unless a realizer is configured (future step).
-                            }
+                            EffectMode::Realize => {}
                         }
                     }
                     DirStmt::Return { expr: e } => {
@@ -739,7 +733,6 @@ pub mod engine {
             let mut effects = EffectLog::default();
             let mut time = TimeState::default();
 
-            // Q-regime host state enforcing linearity.
             let mut q = QState::new();
 
             for stmt in &proc_.body {
@@ -749,9 +742,6 @@ pub mod engine {
 
                 match stmt {
                     DirStmt::Let { name, expr: e } => {
-                        // Host-mode Q intrinsics are expressed as calls in DIR strings.
-                        // This is a deterministic bridge that will be replaced with explicit DIR ops
-                        // when the compiler emits typed Q instructions.
                         if let Some(ty) = parse_q_alloc(e) {
                             q.alloc(name, &ty)?;
                             env.insert(name.clone(), Value::Unit);
@@ -759,21 +749,17 @@ pub mod engine {
                             q.mov(&src, name)?;
                             env.insert(name.clone(), Value::Unit);
                         } else if let Some(src) = parse_q_use(e) {
-                            // Require usable enforces "not moved" + "resource live"
                             let _ = q.require_usable(&src, "q_use")?;
                             env.insert(name.clone(), Value::Unit);
                         } else if let Some(src) = parse_q_consume(e) {
                             q.consume(&src, "q_consume")?;
                             env.insert(name.clone(), Value::Unit);
                         } else {
-                            // Allow classical computation inside Q-regime as a constrained subset.
-                            // This is needed for indices, sizes, flags, and deterministic orchestration.
                             let v = expr::eval(e, env)?;
                             env.insert(name.clone(), v);
                         }
                     }
                     DirStmt::Constrain { predicate } => {
-                        // Constraints are evaluated over the classical env in host-mode.
                         admissibility::check_predicate(predicate, env)?;
                     }
                     DirStmt::Prove { name, from } => {
@@ -785,9 +771,7 @@ pub mod engine {
                         effects.push(kind.clone(), rendered);
                         match self.cfg.effect_mode {
                             EffectMode::Simulate => {}
-                            EffectMode::Realize => {
-                                // v0.1: realization is logging-only unless a realizer is configured (future step).
-                            }
+                            EffectMode::Realize => {}
                         }
                     }
                     DirStmt::Return { expr: e } => {
@@ -808,6 +792,14 @@ pub mod engine {
                 effects,
                 time,
             })
+        }
+
+        fn exec_phi(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmError> {
+            // v0.1: validate constraints (local host-mode) then refuse execution deterministically.
+            match phi_validate_proc(proc_, env)? {
+                PhiValidation::LocallyAdmissible => Err(phi_refuse_execution()),
+                PhiValidation::LocallyInadmissible { message } => Err(DvmError::Inadmissible(message)),
+            }
         }
     }
 
@@ -866,22 +858,18 @@ pub mod engine {
     }
 
     fn parse_q_alloc(expr: &str) -> Option<String> {
-        // q_alloc(QBit)
         parse_call_1(expr, "q_alloc").filter(|s| !s.is_empty())
     }
 
     fn parse_q_move(expr: &str) -> Option<String> {
-        // q_move(a)
         parse_call_1(expr, "q_move").filter(|s| !s.is_empty())
     }
 
     fn parse_q_use(expr: &str) -> Option<String> {
-        // q_use(a)
         parse_call_1(expr, "q_use").filter(|s| !s.is_empty())
     }
 
     fn parse_q_consume(expr: &str) -> Option<String> {
-        // q_consume(a)
         parse_call_1(expr, "q_consume").filter(|s| !s.is_empty())
     }
 }
