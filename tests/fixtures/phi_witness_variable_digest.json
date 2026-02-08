@@ -1,0 +1,8 @@
+{
+  "name": "phi_witness_variable_digest",
+  "dir": "dir/phi_witness_variable_digest.dir.json",
+  "entry": "main",
+  "effects": "simulate",
+  "trace": false,
+  "expect_error": "../golden/phi_witness_variable_digest.trace.json"
+}
