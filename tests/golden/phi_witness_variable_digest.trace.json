@@ -1,0 +1,17 @@
+{
+  "error": {
+    "kind": "UnsupportedRegime",
+    "message": "Φ-regime execution wiring into engine is a later step"
+  },
+  "effects": {
+    "events": [
+      {
+        "kind": "emit",
+        "payload": "{\"Struct\":{\"ty\":\"PhiWitness\",\"fields\":{\"kind\":{\"String\":\"Admissible\"},\"id\":{\"String\":\"Φwitness:1\"},\"constraint_digest\":{\"String\":\"digest:var\"},\"note\":{\"String\":\"Φ witness stub (v0.1): admissible\"}}}}"
+      }
+    ]
+  },
+  "time": {
+    "tick": 5
+  }
+}
