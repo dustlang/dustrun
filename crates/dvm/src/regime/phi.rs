@@ -45,21 +45,18 @@ pub fn validate_proc(
     }
 
     for stmt in &proc_.body {
-        match stmt {
-            crate::dir::DirStmt::Constrain { predicate } => {
-                match admissibility::check_predicate(predicate, env) {
-                    Ok(()) => {}
-                    Err(e) => {
-                        let msg = match e {
-                            DvmError::Inadmissible(s) => s,
-                            DvmError::ConstraintFailure(s) => s,
-                            other => other.to_string(),
-                        };
-                        return Ok(PhiValidation::LocallyInadmissible { message: msg });
-                    }
+        if let crate::dir::DirStmt::Constrain { predicate } = stmt {
+            match crate::admissibility::check_predicate(predicate, env) {
+                Ok(()) => {}
+                Err(e) => {
+                    let msg = match e {
+                        crate::DvmError::Inadmissible(s) => s,
+                        crate::DvmError::ConstraintFailure(s) => s,
+                        other => other.to_string(),
+                    };
+                    return Ok(PhiValidation::LocallyInadmissible { message: msg });
                 }
             }
-            _ => {}
         }
     }
 
