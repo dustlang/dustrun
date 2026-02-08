@@ -1,0 +1,8 @@
+{
+  "name": "q_ok",
+  "dir": "dir/q_ok.dir.json",
+  "entry": "main",
+  "effects": "simulate",
+  "trace": false,
+  "expect_trace": "../golden/q_ok.trace.json"
+}
