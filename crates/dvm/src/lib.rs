@@ -1015,7 +1015,7 @@ pub mod engine {
                         let w = builder.admissible(&digest);
                         env.insert(name.clone(), phi_witness_to_value(&w));
 
-                        Ok(None)
+                        Ok(())
                     }
                     DirStmt::Return { .. } => Ok(()), // ignored in v0.1
                 };
