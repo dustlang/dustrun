@@ -113,7 +113,7 @@ impl QState {
         let src_binding = self.env.get(src).cloned().ok_or_else(|| {
             DvmError::Inadmissible(format!("Q move failed: unknown binding: {src}"))
         })?;
-        
+
         if src_binding.moved {
             return Err(DvmError::Inadmissible(format!(
                 "Q move failed: binding already moved: {src}"
