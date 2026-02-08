@@ -1,4 +1,4 @@
-# File: crates/conformance/src/lib.rs
+// File: crates/conformance/src/lib.rs
 #
 # Conformance harness for DVM semantics.
 #
