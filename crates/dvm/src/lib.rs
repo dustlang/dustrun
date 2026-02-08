@@ -956,7 +956,17 @@ pub mod engine {
                         Ok(())
                     }
                     DirStmt::Constrain { .. } => Ok(()), // already validated
-                    DirStmt::Prove { .. } => Ok(()),     // future wiring
+                    DirStmt::Prove { name, from } => {
+                        // Evaluate and require the predicate to hold in host-mode.
+                        admissibility::check_predicate(from, env)?;
+
+                        // Deterministic witness stub produced from a canonical digest string.
+                        let digest = phi_digest_of_predicate(from);
+                        let w = builder.admissible(&digest);
+
+                        env.insert(name.clone(), phi_witness_to_value(&w));
+                        Ok(())
+                    }
                     DirStmt::Return { .. } => Ok(()),    // ignored in v0.1
                 };
 
@@ -1065,6 +1075,12 @@ pub mod engine {
             ty: "PhiWitness".to_string(),
             fields,
         }
+    }
+    
+    fn phi_digest_of_predicate(pred: &str) -> String {
+        // v0.1 digest is a stable textual encoding.
+        // Future versions can switch to canonical AST hashing with versioning.
+        format!("pred:{pred}")
     }
 }
 
