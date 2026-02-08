@@ -3,10 +3,10 @@
 //! This crate implements the normative execution semantics for DIR artifacts:
 //! - K-regime: deterministic classical execution (reference semantics)
 //! - Q-regime: linear resource semantics enforcement (host-mode semantics)
-//! - Φ-regime: admissibility resolution + witness handling (host-mode semantics)
+//! - Φ-regime: validation + deterministic refusal (v0.1), with witness stub wiring
 //!
 //! This crate contains NO compiler logic and NO CLI logic.
-//! It consumes DIR and produces execution / non-existence outcomes.
+//! It consumes DIR and produces execution traces or refusal/failure traces.
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 pub mod error {
     use thiserror::Error;
 
-    #[derive(Debug, Error)]
+    #[derive(Debug, Error, Clone, PartialEq, Eq)]
     pub enum DvmError {
         #[error("DIR load error: {0}")]
         DirLoad(String),
@@ -150,13 +150,13 @@ pub mod effects {
         Realize,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
     pub struct EffectEvent {
         pub kind: String,    // "observe" | "emit" | "seal" (v0.1)
         pub payload: String, // rendered payload expression
     }
 
-    #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+    #[derive(Debug, Default, Clone, Serialize, Deserialize, PartialEq, Eq)]
     pub struct EffectLog {
         pub events: Vec<EffectEvent>,
     }
@@ -186,14 +186,16 @@ pub mod time {
     #[serde(transparent)]
     pub struct LogicalTick(pub u64);
 
-    #[derive(Debug, Clone, Serialize, Deserialize)]
+    #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
     pub struct TimeState {
         pub tick: LogicalTick,
     }
 
     impl Default for TimeState {
         fn default() -> Self {
-            Self { tick: LogicalTick(0) }
+            Self {
+                tick: LogicalTick(0),
+            }
         }
     }
 
@@ -315,9 +317,9 @@ pub mod expr {
                         match ch {
                             '"' => break,
                             '\\' => {
-                                let esc = chars
-                                    .next()
-                                    .ok_or_else(|| DvmError::Runtime("unterminated string escape".into()))?;
+                                let esc = chars.next().ok_or_else(|| {
+                                    DvmError::Runtime("unterminated string escape".into())
+                                })?;
                                 match esc {
                                     '"' => s.push('"'),
                                     '\\' => s.push('\\'),
@@ -571,7 +573,7 @@ pub mod expr {
 
 pub mod admissibility {
     //! v0.1 admissibility model:
-    //! - Constrain predicates must evaluate to true in K/Q evaluation context over classical env.
+    //! - Constrain predicates must evaluate to true in evaluation context over classical env.
     //! - Φ-regime host-mode semantics will evolve to match the spec.
 
     use super::{expr, DvmError, Value};
@@ -620,11 +622,26 @@ pub mod engine {
         }
     }
 
+    /// Successful outcome (no refusal/failure).
     #[derive(Debug, Clone)]
     pub struct DvmOutcome {
         pub returned: Option<Value>,
         pub effects: EffectLog,
         pub time: TimeState,
+    }
+
+    /// Fault/refusal with deterministic partial context.
+    #[derive(Debug, Clone)]
+    pub struct DvmFault {
+        pub error: DvmError,
+        pub effects: EffectLog,
+        pub time: TimeState,
+    }
+
+    impl DvmFault {
+        pub fn new(error: DvmError, effects: EffectLog, time: TimeState) -> Self {
+            Self { error, effects, time }
+        }
     }
 
     #[derive(Debug)]
@@ -637,10 +654,12 @@ pub mod engine {
             Self { cfg }
         }
 
+        /// Load a DIR program from JSON bytes.
         pub fn load_dir_json(&self, bytes: &[u8]) -> Result<DirProgram, DvmError> {
             serde_json::from_slice::<DirProgram>(bytes).map_err(|e| DvmError::DirLoad(format!("{e}")))
         }
 
+        /// Validate basic DIR structure (v0.1).
         pub fn validate_dir(&self, program: &DirProgram) -> Result<(), DvmError> {
             if program.forges.is_empty() {
                 return Err(DvmError::DirValidate("program has no forges".into()));
@@ -661,28 +680,65 @@ pub mod engine {
             Ok(())
         }
 
+        /// Compatibility API: prior callers expect `Result<Outcome, DvmError>`.
+        ///
+        /// This now drops partial context on failure. Prefer `run_entrypoint_trace` in new code.
         pub fn run_entrypoint(&self, program: &DirProgram, entry: &str) -> Result<DvmOutcome, DvmError> {
-            self.validate_dir(program)?;
+            match self.run_entrypoint_with_fault(program, entry) {
+                Ok(ok) => Ok(ok),
+                Err(fault) => Err(fault.error),
+            }
+        }
 
-            let proc_ = find_proc(program, entry).ok_or_else(|| DvmError::EntrypointNotFound(entry.to_string()))?;
+        /// New API: returns a structured fault carrying deterministic partial context.
+        pub fn run_entrypoint_with_fault(
+            &self,
+            program: &DirProgram,
+            entry: &str,
+        ) -> Result<DvmOutcome, DvmFault> {
+            // validation failures have no prior context
+            self.validate_dir(program).map_err(|e| DvmFault::new(e, EffectLog::default(), TimeState::default()))?;
+
+            let proc_ = find_proc(program, entry)
+                .ok_or_else(|| DvmFault::new(DvmError::EntrypointNotFound(entry.to_string()), EffectLog::default(), TimeState::default()))?;
 
             let mut env = IndexMap::<String, Value>::new();
             for p in &proc_.params {
-                return Err(DvmError::Runtime(format!(
-                    "entrypoint has params in v0.1 host-runner: {}:{}",
-                    p.name, p.ty
-                )));
+                return Err(DvmFault::new(
+                    DvmError::Runtime(format!(
+                        "entrypoint has params in v0.1 host-runner: {}:{}",
+                        p.name, p.ty
+                    )),
+                    EffectLog::default(),
+                    TimeState::default(),
+                ));
             }
 
             match proc_.regime.as_str() {
                 "K" => self.exec_k(proc_, &mut env),
                 "Q" => self.exec_q(proc_, &mut env),
                 "Φ" => self.exec_phi(proc_, &mut env),
-                other => Err(DvmError::UnsupportedRegime(format!("unknown regime: {other}"))),
+                other => Err(DvmFault::new(
+                    DvmError::UnsupportedRegime(format!("unknown regime: {other}")),
+                    EffectLog::default(),
+                    TimeState::default(),
+                )),
             }
         }
 
-        fn exec_k(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmError> {
+        /// Trace API: produce a single trace value for conformance and tooling.
+        pub fn run_entrypoint_trace(&self, program: &DirProgram, entry: &str) -> crate::DvmTrace {
+            match self.run_entrypoint_with_fault(program, entry) {
+                Ok(ok) => crate::DvmTrace::Success(ok.into()),
+                Err(fault) => crate::DvmTrace::Failure(crate::DvmFailureTrace {
+                    error: crate::TraceError::from(&fault.error),
+                    effects: Some(fault.effects),
+                    time: Some(fault.time),
+                }),
+            }
+        }
+
+        fn exec_k(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmFault> {
             let mut effects = EffectLog::default();
             let mut time = TimeState::default();
 
@@ -691,17 +747,20 @@ pub mod engine {
                     log::info!("tick={} stmt={:?}", time.tick.0, stmt);
                 }
 
-                match stmt {
+                let step_res: Result<Option<Value>, DvmError> = match stmt {
                     DirStmt::Let { name, expr: e } => {
                         let v = expr::eval(e, env)?;
                         env.insert(name.clone(), v);
+                        Ok(None)
                     }
                     DirStmt::Constrain { predicate } => {
                         admissibility::check_predicate(predicate, env)?;
+                        Ok(None)
                     }
                     DirStmt::Prove { name, from } => {
                         admissibility::check_predicate(from, env)?;
                         env.insert(name.clone(), Value::Unit);
+                        Ok(None)
                     }
                     DirStmt::Effect { kind, payload } => {
                         let rendered = render_payload(payload, env)?;
@@ -710,18 +769,29 @@ pub mod engine {
                             EffectMode::Simulate => {}
                             EffectMode::Realize => {}
                         }
+                        Ok(None)
                     }
                     DirStmt::Return { expr: e } => {
                         let v = expr::eval(e, env)?;
+                        Ok(Some(v))
+                    }
+                };
+
+                match step_res {
+                    Ok(Some(v)) => {
                         return Ok(DvmOutcome {
                             returned: Some(v),
                             effects,
                             time,
                         });
                     }
+                    Ok(None) => {
+                        time.step();
+                    }
+                    Err(e) => {
+                        return Err(DvmFault::new(e, effects, time));
+                    }
                 }
-
-                time.step();
             }
 
             Ok(DvmOutcome {
@@ -731,7 +801,7 @@ pub mod engine {
             })
         }
 
-        fn exec_q(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmError> {
+        fn exec_q(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmFault> {
             let mut effects = EffectLog::default();
             let mut time = TimeState::default();
             let mut q = QState::new();
@@ -741,31 +811,38 @@ pub mod engine {
                     log::info!("tick={} stmt={:?}", time.tick.0, stmt);
                 }
 
-                match stmt {
+                let step_res: Result<Option<Value>, DvmError> = match stmt {
                     DirStmt::Let { name, expr: e } => {
                         if let Some(ty) = parse_q_alloc(e) {
                             q.alloc(name, &ty)?;
                             env.insert(name.clone(), Value::Unit);
+                            Ok(None)
                         } else if let Some(src) = parse_q_move(e) {
                             q.mov(&src, name)?;
                             env.insert(name.clone(), Value::Unit);
+                            Ok(None)
                         } else if let Some(src) = parse_q_use(e) {
                             let _ = q.require_usable(&src, "q_use")?;
                             env.insert(name.clone(), Value::Unit);
+                            Ok(None)
                         } else if let Some(src) = parse_q_consume(e) {
                             q.consume(&src, "q_consume")?;
                             env.insert(name.clone(), Value::Unit);
+                            Ok(None)
                         } else {
                             let v = expr::eval(e, env)?;
                             env.insert(name.clone(), v);
+                            Ok(None)
                         }
                     }
                     DirStmt::Constrain { predicate } => {
                         admissibility::check_predicate(predicate, env)?;
+                        Ok(None)
                     }
                     DirStmt::Prove { name, from } => {
                         admissibility::check_predicate(from, env)?;
                         env.insert(name.clone(), Value::Unit);
+                        Ok(None)
                     }
                     DirStmt::Effect { kind, payload } => {
                         let rendered = render_payload(payload, env)?;
@@ -774,18 +851,29 @@ pub mod engine {
                             EffectMode::Simulate => {}
                             EffectMode::Realize => {}
                         }
+                        Ok(None)
                     }
                     DirStmt::Return { expr: e } => {
                         let v = expr::eval(e, env)?;
+                        Ok(Some(v))
+                    }
+                };
+
+                match step_res {
+                    Ok(Some(v)) => {
                         return Ok(DvmOutcome {
                             returned: Some(v),
                             effects,
                             time,
                         });
                     }
+                    Ok(None) => {
+                        time.step();
+                    }
+                    Err(e) => {
+                        return Err(DvmFault::new(e, effects, time));
+                    }
                 }
-
-                time.step();
             }
 
             Ok(DvmOutcome {
@@ -795,15 +883,19 @@ pub mod engine {
             })
         }
 
-        fn exec_phi(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmError> {
+        fn exec_phi(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmFault> {
             // v0.1: validate constraints (local host-mode) then refuse execution deterministically,
             // but allow construction of Φ witness stubs as a host intrinsic.
-            let validation = phi_validate_proc(proc_, env)?;
-            if let PhiValidation::LocallyInadmissible { message } = validation {
-                return Err(DvmError::Inadmissible(message));
+            match phi_validate_proc(proc_, env) {
+                Ok(PhiValidation::LocallyAdmissible) => {}
+                Ok(PhiValidation::LocallyInadmissible { message }) => {
+                    return Err(DvmFault::new(DvmError::Inadmissible(message), EffectLog::default(), TimeState::default()));
+                }
+                Err(e) => {
+                    return Err(DvmFault::new(e, EffectLog::default(), TimeState::default()));
+                }
             }
 
-            // Locally admissible: scan for witness stub requests before refusing.
             let mut effects = EffectLog::default();
             let mut time = TimeState::default();
             let mut builder = PhiWitnessBuilder::new();
@@ -813,13 +905,10 @@ pub mod engine {
                     log::info!("tick={} stmt={:?}", time.tick.0, stmt);
                 }
 
-                match stmt {
+                let step_res: Result<(), DvmError> = match stmt {
                     DirStmt::Let { name, expr: e } => {
                         if let Some(digest) = parse_phi_witness(e) {
-                            // Deterministic stub witness.
                             let w = builder.admissible(&digest);
-                            // Encode witness as a stable string to avoid extending Value schema yet.
-                            // (We can move to Value::Struct later with trace-schema versioning.)
                             let js = serde_json::to_string(&w).map_err(|err| {
                                 DvmError::Runtime(format!("phi witness serialization failed: {err}"))
                             })?;
@@ -828,28 +917,27 @@ pub mod engine {
                             // No other Φ statements are executed in v0.1.
                             env.insert(name.clone(), Value::Unit);
                         }
+                        Ok(())
                     }
                     DirStmt::Effect { kind, payload } => {
-                        // Effects can still be logged (simulate) for debugging workflow.
                         let rendered = render_payload(payload, env)?;
                         effects.push(kind.clone(), rendered);
+                        Ok(())
                     }
-                    DirStmt::Constrain { .. } => {
-                        // already validated above; no-op here
-                    }
-                    DirStmt::Prove { .. } => {
-                        // witness/proof wiring is future work; no-op in v0.1
-                    }
-                    DirStmt::Return { .. } => {
-                        // Φ execution is not implemented; we refuse below.
-                    }
+                    DirStmt::Constrain { .. } => Ok(()), // already validated
+                    DirStmt::Prove { .. } => Ok(()),     // future wiring
+                    DirStmt::Return { .. } => Ok(()),    // ignored in v0.1
+                };
+
+                if let Err(e) = step_res {
+                    return Err(DvmFault::new(e, effects, time));
                 }
 
                 time.step();
             }
 
-            // Canonical refusal for Φ execution in v0.1.
-            Err(phi_refuse_execution())
+            // Refuse execution but carry partial context.
+            Err(DvmFault::new(phi_refuse_execution(), effects, time))
         }
     }
 
@@ -924,21 +1012,46 @@ pub mod engine {
     }
 
     fn parse_phi_witness(expr: &str) -> Option<String> {
-        // phi_witness("digest")
         parse_call_1(expr, "phi_witness").filter(|s| !s.is_empty())
     }
 }
 
-pub use engine::{Dvm, DvmConfig, DvmOutcome};
+pub use engine::{Dvm, DvmConfig, DvmFault, DvmOutcome};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DvmTrace {
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct TraceError {
+    pub kind: String,
+    pub message: String,
+}
+
+impl From<&DvmError> for TraceError {
+    fn from(e: &DvmError) -> Self {
+        let (kind, message) = match e {
+            DvmError::DirLoad(s) => ("DirLoad", s.clone()),
+            DvmError::DirValidate(s) => ("DirValidate", s.clone()),
+            DvmError::EntrypointNotFound(s) => ("EntrypointNotFound", s.clone()),
+            DvmError::UnsupportedRegime(s) => ("UnsupportedRegime", s.clone()),
+            DvmError::Inadmissible(s) => ("Inadmissible", s.clone()),
+            DvmError::ConstraintFailure(s) => ("ConstraintFailure", s.clone()),
+            DvmError::EffectViolation(s) => ("EffectViolation", s.clone()),
+            DvmError::TimeViolation(s) => ("TimeViolation", s.clone()),
+            DvmError::Runtime(s) => ("Runtime", s.clone()),
+        };
+        Self {
+            kind: kind.to_string(),
+            message,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct DvmSuccessTrace {
     pub returned: Option<Value>,
     pub effects: EffectLog,
     pub time: TimeState,
 }
 
-impl From<DvmOutcome> for DvmTrace {
+impl From<DvmOutcome> for DvmSuccessTrace {
     fn from(o: DvmOutcome) -> Self {
         Self {
             returned: o.returned,
@@ -946,4 +1059,22 @@ impl From<DvmOutcome> for DvmTrace {
             time: o.time,
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct DvmFailureTrace {
+    pub error: TraceError,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub effects: Option<EffectLog>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time: Option<TimeState>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(untagged)]
+pub enum DvmTrace {
+    Success(DvmSuccessTrace),
+    Failure(DvmFailureTrace),
 }
