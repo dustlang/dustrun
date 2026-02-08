@@ -1197,6 +1197,6 @@ pub struct DvmFailureTrace {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum DvmTrace {
-    Success(DvmSuccessTrace),
     Failure(DvmFailureTrace),
+    Success(DvmSuccessTrace),
 }
