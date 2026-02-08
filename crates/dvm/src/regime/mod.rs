@@ -6,6 +6,19 @@
 
 pub mod q;
 pub mod phi;
+pub mod phi_witness;
 
 pub use q::{QBinding, QResId, QResMeta, QResState, QSnapshot, QState};
-pub use phi::{PhiValidation, refuse_execution as phi_refuse_execution, validate_proc as phi_validate_proc};
+
+pub use phi::{
+    PhiValidation,
+    refuse_execution as phi_refuse_execution,
+    validate_proc as phi_validate_proc,
+};
+
+pub use phi_witness::{
+    PhiWitness,
+    PhiWitnessBuilder,
+    PhiWitnessKind,
+    refuse_global_witness as phi_refuse_global_witness,
+};
