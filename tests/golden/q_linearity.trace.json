@@ -1,0 +1,8 @@
+# File: tests/golden/q_linearity.trace.json
+
+{
+  "error": {
+    "kind": "Inadmissible",
+    "message": "Q use failed: binding already moved: a (op=q_use)"
+  }
+}
