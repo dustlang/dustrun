@@ -32,6 +32,21 @@ jobs:
       - name: Build
         run: cargo build --workspace --all-targets
 
+      - name: Debug phi_prove_error golden (raw)
+  run: |
+    echo "::group::pwd && ls"
+    pwd
+    ls -la
+    echo "::endgroup::"
+
+    echo "::group::tests/golden listing"
+    ls -la tests/golden || true
+    echo "::endgroup::"
+
+    echo "::group::raw tests/golden/phi_prove_error.trace.json"
+    sed -n '1,120p' tests/golden/phi_prove_error.trace.json || true
+    echo "::endgroup::"
+
       - name: Test
         run: cargo test --workspace --all-targets
 
