@@ -1,0 +1,25 @@
+{
+  "forges": [
+    {
+      "name": "phicore",
+      "shapes": [],
+      "procs": [
+        {
+          "regime": "Φ",
+          "name": "main",
+          "params": [],
+          "uses": [],
+          "ret": "Int",
+          "qualifiers": [],
+          "body": [
+            { "Constrain": { "predicate": "true" } },
+            { "Prove": { "name": "p", "from": "Eq(1,1)" } },
+            { "Effect": { "kind": "emit", "payload": "p" } },
+            { "Return": { "expr": "1" } }
+          ]
+        }
+      ],
+      "binds": []
+    }
+  ]
+}
