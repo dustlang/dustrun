@@ -921,7 +921,23 @@ pub mod engine {
 
                 let step_res: Result<(), DvmError> = match stmt {
                     DirStmt::Let { name, expr: e } => {
-                        if let Some(digest) = parse_phi_witness(e) {
+                        if let Some(arg_expr) = parse_phi_witness(e) {
+                            // Evaluate the argument expression and require it to be a String.
+                            let v = expr::eval(&arg_expr, env)?;
+                            let digest = match v {
+                                Value::String(s) => s,
+                                other => {
+                                    return Err(DvmFault::new(
+                                        DvmError::Runtime(format!(
+                                            "phi_witness expects a String digest, got {:?}",
+                                            other
+                                        )),
+                                        effects,
+                                        time,
+                                    ));
+                                }
+                            };
+
                             let w = builder.admissible(&digest);
                             let js = serde_json::to_string(&w).map_err(|err| {
                                 DvmError::Runtime(format!("phi witness serialization failed: {err}"))
@@ -933,6 +949,8 @@ pub mod engine {
                         }
                         Ok(())
                     }
+
+// --- re
                     DirStmt::Effect { kind, payload } => {
                         let rendered = render_payload(payload, env)?;
                         effects.push(kind.clone(), rendered);
