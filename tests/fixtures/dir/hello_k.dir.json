@@ -1,0 +1,26 @@
+# File: tests/fixtures/dir/hello_k.dir.json
+
+{
+  "forges": [
+    {
+      "name": "core",
+      "shapes": [],
+      "procs": [
+        {
+          "regime": "K",
+          "name": "main",
+          "params": [],
+          "uses": [],
+          "ret": "Int",
+          "qualifiers": [],
+          "body": [
+            { "Let": { "name": "msg", "expr": "\"Hello, Dust\"" } },
+            { "Effect": { "kind": "emit", "payload": "msg" } },
+            { "Return": { "expr": "42" } }
+          ]
+        }
+      ],
+      "binds": []
+    }
+  ]
+}
