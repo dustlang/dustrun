@@ -1,0 +1,18 @@
+# File: tests/golden/hello_k.trace.json
+
+{
+  "returned": {
+    "Int": 42
+  },
+  "effects": {
+    "events": [
+      {
+        "kind": "emit",
+        "payload": "Hello, Dust"
+      }
+    ]
+  },
+  "time": {
+    "tick": 2
+  }
+}
