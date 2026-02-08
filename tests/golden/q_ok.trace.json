@@ -1,0 +1,16 @@
+{
+  "returned": {
+    "Int": 7
+  },
+  "effects": {
+    "events": [
+      {
+        "kind": "emit",
+        "payload": "Q ok"
+      }
+    ]
+  },
+  "time": {
+    "tick": 3
+  }
+}
