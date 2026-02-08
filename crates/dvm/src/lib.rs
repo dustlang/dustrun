@@ -1,5 +1,3 @@
-# File: crates/dvm/src/lib.rs
-
 //! Dust Virtual Machine (DVM) — reference executor for DPL.
 //!
 //! This crate implements the normative execution semantics for DIR artifacts:
@@ -165,7 +163,10 @@ pub mod effects {
 
     impl EffectLog {
         pub fn push(&mut self, kind: impl Into<String>, payload: impl Into<String>) {
-            self.events.push(EffectEvent { kind: kind.into(), payload: payload.into() });
+            self.events.push(EffectEvent {
+                kind: kind.into(),
+                payload: payload.into(),
+            });
         }
     }
 }
@@ -188,7 +189,9 @@ pub mod time {
 
     impl Default for TimeState {
         fn default() -> Self {
-            Self { tick: LogicalTick(0) }
+            Self {
+                tick: LogicalTick(0),
+            }
         }
     }
 
@@ -235,15 +238,6 @@ pub use value::Value;
 pub mod expr {
     //! Minimal expression parser for v0.1 DIR strings.
     //!
-    //! The compiler currently lowers expressions to strings like:
-    //! - "123"
-    //! - "true"
-    //! - "\"hello\""  (Rust debug-string style)
-    //! - "x"
-    //! - "(x Add 1)"
-    //! - "a Mul b"
-    //! - "x Eq y"
-    //!
     //! Operators are emitted as identifiers: Add, Sub, Mul, Div, Eq, Lt, Le, Gt, Ge, And, Or
 
     use super::{DvmError, Value};
@@ -284,23 +278,44 @@ pub mod expr {
             }
 
             match c {
-                '(' => { chars.next(); out.push(Tok::LParen); }
-                ')' => { chars.next(); out.push(Tok::RParen); }
-                ',' => { chars.next(); out.push(Tok::Comma); }
-                '.' => { chars.next(); out.push(Tok::Dot); }
-                '{' => { chars.next(); out.push(Tok::LBrace); }
-                '}' => { chars.next(); out.push(Tok::RBrace); }
-                ':' => { chars.next(); out.push(Tok::Colon); }
+                '(' => {
+                    chars.next();
+                    out.push(Tok::LParen);
+                }
+                ')' => {
+                    chars.next();
+                    out.push(Tok::RParen);
+                }
+                ',' => {
+                    chars.next();
+                    out.push(Tok::Comma);
+                }
+                '.' => {
+                    chars.next();
+                    out.push(Tok::Dot);
+                }
+                '{' => {
+                    chars.next();
+                    out.push(Tok::LBrace);
+                }
+                '}' => {
+                    chars.next();
+                    out.push(Tok::RBrace);
+                }
+                ':' => {
+                    chars.next();
+                    out.push(Tok::Colon);
+                }
                 '"' => {
-                    // Parse a JSON-like string (the compiler uses Rust debug format "\"...\"")
-                    // We accept basic escape sequences: \" \\ \n \t \r
                     chars.next(); // consume opening "
                     let mut s = String::new();
                     while let Some(ch) = chars.next() {
                         match ch {
                             '"' => break,
                             '\\' => {
-                                let esc = chars.next().ok_or_else(|| DvmError::Runtime("unterminated string escape".into()))?;
+                                let esc = chars
+                                    .next()
+                                    .ok_or_else(|| DvmError::Runtime("unterminated string escape".into()))?;
                                 match esc {
                                     '"' => s.push('"'),
                                     '\\' => s.push('\\'),
@@ -308,7 +323,9 @@ pub mod expr {
                                     't' => s.push('\t'),
                                     'r' => s.push('\r'),
                                     other => {
-                                        return Err(DvmError::Runtime(format!("unsupported string escape: \\{}", other)));
+                                        return Err(DvmError::Runtime(format!(
+                                            "unsupported string escape: \\{other}"
+                                        )));
                                     }
                                 }
                             }
@@ -318,7 +335,6 @@ pub mod expr {
                     out.push(Tok::Str(s));
                 }
                 '-' | '0'..='9' => {
-                    // int literal (support leading '-')
                     let mut buf = String::new();
                     if c == '-' {
                         buf.push('-');
@@ -332,7 +348,9 @@ pub mod expr {
                             break;
                         }
                     }
-                    let n: i64 = buf.parse().map_err(|_| DvmError::Runtime(format!("invalid int literal: {buf}")))?;
+                    let n: i64 = buf
+                        .parse()
+                        .map_err(|_| DvmError::Runtime(format!("invalid int literal: {buf}")))?;
                     out.push(Tok::Int(n));
                 }
                 _ if is_ident_start(c) => {
@@ -352,7 +370,9 @@ pub mod expr {
                     }
                 }
                 _ => {
-                    return Err(DvmError::Runtime(format!("unexpected character in expression: {c}")));
+                    return Err(DvmError::Runtime(format!(
+                        "unexpected character in expression: {c}"
+                    )));
                 }
             }
         }
@@ -368,8 +388,12 @@ pub mod expr {
     }
 
     impl Parser {
-        fn new(toks: Vec<Tok>) -> Self { Self { toks, i: 0 } }
-        fn peek(&self) -> &Tok { self.toks.get(self.i).unwrap_or(&Tok::Eof) }
+        fn new(toks: Vec<Tok>) -> Self {
+            Self { toks, i: 0 }
+        }
+        fn peek(&self) -> &Tok {
+            self.toks.get(self.i).unwrap_or(&Tok::Eof)
+        }
         fn next(&mut self) -> Tok {
             let t = self.peek().clone();
             self.i = self.i.saturating_add(1);
@@ -377,7 +401,14 @@ pub mod expr {
         }
         fn eat(&mut self, expected: Tok) -> Result<(), DvmError> {
             let got = self.next();
-            if got == expected { Ok(()) } else { Err(DvmError::Runtime(format!("expected {:?}, got {:?}", expected, got))) }
+            if got == expected {
+                Ok(())
+            } else {
+                Err(DvmError::Runtime(format!(
+                    "expected {:?}, got {:?}",
+                    expected, got
+                )))
+            }
         }
     }
 
@@ -395,8 +426,12 @@ pub mod expr {
             if matches!(p.peek(), Tok::Ident(op) if op == "Or") {
                 p.next();
                 let right = parse_and(p, env)?;
-                let lb = left.as_bool().ok_or_else(|| DvmError::Runtime("Or requires bool operands".into()))?;
-                let rb = right.as_bool().ok_or_else(|| DvmError::Runtime("Or requires bool operands".into()))?;
+                let lb = left
+                    .as_bool()
+                    .ok_or_else(|| DvmError::Runtime("Or requires bool operands".into()))?;
+                let rb = right
+                    .as_bool()
+                    .ok_or_else(|| DvmError::Runtime("Or requires bool operands".into()))?;
                 left = Value::Bool(lb || rb);
             } else {
                 break;
@@ -411,8 +446,12 @@ pub mod expr {
             if matches!(p.peek(), Tok::Ident(op) if op == "And") {
                 p.next();
                 let right = parse_cmp(p, env)?;
-                let lb = left.as_bool().ok_or_else(|| DvmError::Runtime("And requires bool operands".into()))?;
-                let rb = right.as_bool().ok_or_else(|| DvmError::Runtime("And requires bool operands".into()))?;
+                let lb = left
+                    .as_bool()
+                    .ok_or_else(|| DvmError::Runtime("And requires bool operands".into()))?;
+                let rb = right
+                    .as_bool()
+                    .ok_or_else(|| DvmError::Runtime("And requires bool operands".into()))?;
                 left = Value::Bool(lb && rb);
             } else {
                 break;
@@ -425,27 +464,31 @@ pub mod expr {
         let mut left = parse_add(p, env)?;
         loop {
             let op = match p.peek() {
-                Tok::Ident(s) if ["Eq","Lt","Le","Gt","Ge"].contains(&s.as_str()) => s.clone(),
+                Tok::Ident(s) if ["Eq", "Lt", "Le", "Gt", "Ge"].contains(&s.as_str()) => s.clone(),
                 _ => break,
             };
             p.next();
             let right = parse_add(p, env)?;
             left = match op.as_str() {
                 "Eq" => Value::Bool(left == right),
-                "Lt" => Value::Bool(cmp_int(&left, &right, |a,b| a < b)?),
-                "Le" => Value::Bool(cmp_int(&left, &right, |a,b| a <= b)?),
-                "Gt" => Value::Bool(cmp_int(&left, &right, |a,b| a > b)?),
-                "Ge" => Value::Bool(cmp_int(&left, &right, |a,b| a >= b)?),
+                "Lt" => Value::Bool(cmp_int(&left, &right, |a, b| a < b)?),
+                "Le" => Value::Bool(cmp_int(&left, &right, |a, b| a <= b)?),
+                "Gt" => Value::Bool(cmp_int(&left, &right, |a, b| a > b)?),
+                "Ge" => Value::Bool(cmp_int(&left, &right, |a, b| a >= b)?),
                 _ => return Err(DvmError::Runtime(format!("unknown comparison op: {op}"))),
             };
         }
         Ok(left)
     }
 
-    fn cmp_int<F: FnOnce(i64,i64)->bool>(l: &Value, r: &Value, f: F) -> Result<bool, DvmError> {
-        let a = l.as_int().ok_or_else(|| DvmError::Runtime("comparison requires int operands".into()))?;
-        let b = r.as_int().ok_or_else(|| DvmError::Runtime("comparison requires int operands".into()))?;
-        Ok(f(a,b))
+    fn cmp_int<F: FnOnce(i64, i64) -> bool>(l: &Value, r: &Value, f: F) -> Result<bool, DvmError> {
+        let a = l
+            .as_int()
+            .ok_or_else(|| DvmError::Runtime("comparison requires int operands".into()))?;
+        let b = r
+            .as_int()
+            .ok_or_else(|| DvmError::Runtime("comparison requires int operands".into()))?;
+        Ok(f(a, b))
     }
 
     fn parse_add(p: &mut Parser, env: &IndexMap<String, Value>) -> Result<Value, DvmError> {
@@ -457,9 +500,17 @@ pub mod expr {
             };
             p.next();
             let right = parse_mul(p, env)?;
-            let a = left.as_int().ok_or_else(|| DvmError::Runtime("Add/Sub requires int operands".into()))?;
-            let b = right.as_int().ok_or_else(|| DvmError::Runtime("Add/Sub requires int operands".into()))?;
-            left = if op == "Add" { Value::Int(a + b) } else { Value::Int(a - b) };
+            let a = left
+                .as_int()
+                .ok_or_else(|| DvmError::Runtime("Add/Sub requires int operands".into()))?;
+            let b = right
+                .as_int()
+                .ok_or_else(|| DvmError::Runtime("Add/Sub requires int operands".into()))?;
+            left = if op == "Add" {
+                Value::Int(a + b)
+            } else {
+                Value::Int(a - b)
+            };
         }
         Ok(left)
     }
@@ -473,12 +524,20 @@ pub mod expr {
             };
             p.next();
             let right = parse_primary(p, env)?;
-            let a = left.as_int().ok_or_else(|| DvmError::Runtime("Mul/Div requires int operands".into()))?;
-            let b = right.as_int().ok_or_else(|| DvmError::Runtime("Mul/Div requires int operands".into()))?;
+            let a = left
+                .as_int()
+                .ok_or_else(|| DvmError::Runtime("Mul/Div requires int operands".into()))?;
+            let b = right
+                .as_int()
+                .ok_or_else(|| DvmError::Runtime("Mul/Div requires int operands".into()))?;
             if op == "Div" && b == 0 {
                 return Err(DvmError::Runtime("division by zero".into()));
             }
-            left = if op == "Mul" { Value::Int(a * b) } else { Value::Int(a / b) };
+            left = if op == "Mul" {
+                Value::Int(a * b)
+            } else {
+                Value::Int(a / b)
+            };
         }
         Ok(left)
     }
@@ -500,30 +559,34 @@ pub mod expr {
                 p.eat(Tok::RParen)?;
                 Ok(v)
             }
-            other => Err(DvmError::Runtime(format!("unexpected token in expression: {:?}", other))),
+            other => Err(DvmError::Runtime(format!(
+                "unexpected token in expression: {:?}",
+                other
+            ))),
         }
     }
-
-    // NOTE: Struct literals and field access are not yet required for v0.1 executable examples.
-    // They will be implemented as soon as we encounter DIR payloads that use them.
 }
 
 pub mod admissibility {
     //! v0.1 admissibility model:
-    //! - Constrain predicates must evaluate to true in K-regime evaluation context.
-    //! - Φ-regime: "constrain" is treated as global constraints; for now, we enforce that
-    //!   all constraints in the selected proc body are satisfiable under the local environment
-    //!   (host-mode, deterministic).
-    //!
-    //! This will evolve to match full spec semantics as DIR grows.
+    //! - Constrain predicates must evaluate to true in K/Q evaluation context over classical env.
+    //! - Φ-regime host-mode semantics will evolve to match the spec.
 
     use super::{expr, DvmError, Value};
     use indexmap::IndexMap;
 
     pub fn check_predicate(predicate: &str, env: &IndexMap<String, Value>) -> Result<(), DvmError> {
         let v = expr::eval(predicate, env)?;
-        let ok = v.as_bool().ok_or_else(|| DvmError::ConstraintFailure("constraint predicate did not evaluate to bool".into()))?;
-        if ok { Ok(()) } else { Err(DvmError::Inadmissible(format!("constraint failed: {predicate}"))) }
+        let ok = v.as_bool().ok_or_else(|| {
+            DvmError::ConstraintFailure("constraint predicate did not evaluate to bool".into())
+        })?;
+        if ok {
+            Ok(())
+        } else {
+            Err(DvmError::Inadmissible(format!(
+                "constraint failed: {predicate}"
+            )))
+        }
     }
 }
 
@@ -532,8 +595,8 @@ pub use regime::*;
 
 pub mod engine {
     use super::{
-        admissibility, dir::DirStmt, effects::EffectMode, effects::EffectLog, expr, time::TimeState,
-        DirProgram, DirProc, DvmError, Value,
+        admissibility, dir::DirStmt, effects::EffectMode, effects::EffectLog, expr,
+        regime::QState, time::TimeState, DirProgram, DirProc, DvmError, Value,
     };
     use indexmap::IndexMap;
 
@@ -545,7 +608,10 @@ pub mod engine {
 
     impl Default for DvmConfig {
         fn default() -> Self {
-            Self { effect_mode: EffectMode::Simulate, trace: false }
+            Self {
+                effect_mode: EffectMode::Simulate,
+                trace: false,
+            }
         }
     }
 
@@ -562,12 +628,13 @@ pub mod engine {
     }
 
     impl Dvm {
-        pub fn new(cfg: DvmConfig) -> Self { Self { cfg } }
+        pub fn new(cfg: DvmConfig) -> Self {
+            Self { cfg }
+        }
 
         /// Load a DIR program from JSON bytes.
         pub fn load_dir_json(&self, bytes: &[u8]) -> Result<DirProgram, DvmError> {
-            serde_json::from_slice::<DirProgram>(bytes)
-                .map_err(|e| DvmError::DirLoad(format!("{e}")))
+            serde_json::from_slice::<DirProgram>(bytes).map_err(|e| DvmError::DirLoad(format!("{e}")))
         }
 
         /// Validate basic DIR structure (v0.1).
@@ -592,26 +659,25 @@ pub mod engine {
         }
 
         /// Execute an entrypoint proc by name.
-        ///
-        /// v0.1 selection rules:
-        /// - Finds the first proc with matching name across all forges.
-        /// - If multiple matches exist, execution is deterministic but ambiguous; this will be tightened
-        ///   once DIR includes fully-qualified proc paths.
         pub fn run_entrypoint(&self, program: &DirProgram, entry: &str) -> Result<DvmOutcome, DvmError> {
             self.validate_dir(program)?;
 
-            let proc_ = find_proc(program, entry)
-                .ok_or_else(|| DvmError::EntrypointNotFound(entry.to_string()))?;
+            let proc_ = find_proc(program, entry).ok_or_else(|| DvmError::EntrypointNotFound(entry.to_string()))?;
 
             let mut env = IndexMap::<String, Value>::new();
             for p in &proc_.params {
-                return Err(DvmError::Runtime(format!("entrypoint has params in v0.1 host-runner: {}:{}", p.name, p.ty)));
+                return Err(DvmError::Runtime(format!(
+                    "entrypoint has params in v0.1 host-runner: {}:{}",
+                    p.name, p.ty
+                )));
             }
 
             match proc_.regime.as_str() {
                 "K" => self.exec_k(proc_, &mut env),
-                "Q" => Err(DvmError::UnsupportedRegime("Q-regime execution wiring into engine is next step".into())),
-                "Φ" => Err(DvmError::UnsupportedRegime("Φ-regime execution wiring into engine is next step".into())),
+                "Q" => self.exec_q(proc_, &mut env),
+                "Φ" => Err(DvmError::UnsupportedRegime(
+                    "Φ-regime execution wiring into engine is a later step".into(),
+                )),
                 other => Err(DvmError::UnsupportedRegime(format!("unknown regime: {other}"))),
             }
         }
@@ -641,7 +707,7 @@ pub mod engine {
                         let rendered = render_payload(payload, env)?;
                         effects.push(kind.clone(), rendered);
                         match self.cfg.effect_mode {
-                            EffectMode::Simulate => { /* log only */ }
+                            EffectMode::Simulate => {}
                             EffectMode::Realize => {
                                 // v0.1: realization is logging-only unless a realizer is configured (future step).
                             }
@@ -649,14 +715,97 @@ pub mod engine {
                     }
                     DirStmt::Return { expr: e } => {
                         let v = expr::eval(e, env)?;
-                        return Ok(DvmOutcome { returned: Some(v), effects, time });
+                        return Ok(DvmOutcome {
+                            returned: Some(v),
+                            effects,
+                            time,
+                        });
                     }
                 }
 
                 time.step();
             }
 
-            Ok(DvmOutcome { returned: None, effects, time })
+            Ok(DvmOutcome {
+                returned: None,
+                effects,
+                time,
+            })
+        }
+
+        fn exec_q(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmError> {
+            let mut effects = EffectLog::default();
+            let mut time = TimeState::default();
+
+            // Q-regime host state enforcing linearity.
+            let mut q = QState::new();
+
+            for stmt in &proc_.body {
+                if self.cfg.trace {
+                    log::info!("tick={} stmt={:?}", time.tick.0, stmt);
+                }
+
+                match stmt {
+                    DirStmt::Let { name, expr: e } => {
+                        // Host-mode Q intrinsics are expressed as calls in DIR strings.
+                        // This is a deterministic bridge that will be replaced with explicit DIR ops
+                        // when the compiler emits typed Q instructions.
+                        if let Some(ty) = parse_q_alloc(e) {
+                            q.alloc(name, &ty)?;
+                            env.insert(name.clone(), Value::Unit);
+                        } else if let Some(src) = parse_q_move(e) {
+                            q.mov(&src, name)?;
+                            env.insert(name.clone(), Value::Unit);
+                        } else if let Some(src) = parse_q_use(e) {
+                            // Require usable enforces "not moved" + "resource live"
+                            let _ = q.require_usable(&src, "q_use")?;
+                            env.insert(name.clone(), Value::Unit);
+                        } else if let Some(src) = parse_q_consume(e) {
+                            q.consume(&src, "q_consume")?;
+                            env.insert(name.clone(), Value::Unit);
+                        } else {
+                            // Allow classical computation inside Q-regime as a constrained subset.
+                            // This is needed for indices, sizes, flags, and deterministic orchestration.
+                            let v = expr::eval(e, env)?;
+                            env.insert(name.clone(), v);
+                        }
+                    }
+                    DirStmt::Constrain { predicate } => {
+                        // Constraints are evaluated over the classical env in host-mode.
+                        admissibility::check_predicate(predicate, env)?;
+                    }
+                    DirStmt::Prove { name, from } => {
+                        admissibility::check_predicate(from, env)?;
+                        env.insert(name.clone(), Value::Unit);
+                    }
+                    DirStmt::Effect { kind, payload } => {
+                        let rendered = render_payload(payload, env)?;
+                        effects.push(kind.clone(), rendered);
+                        match self.cfg.effect_mode {
+                            EffectMode::Simulate => {}
+                            EffectMode::Realize => {
+                                // v0.1: realization is logging-only unless a realizer is configured (future step).
+                            }
+                        }
+                    }
+                    DirStmt::Return { expr: e } => {
+                        let v = expr::eval(e, env)?;
+                        return Ok(DvmOutcome {
+                            returned: Some(v),
+                            effects,
+                            time,
+                        });
+                    }
+                }
+
+                time.step();
+            }
+
+            Ok(DvmOutcome {
+                returned: None,
+                effects,
+                time,
+            })
         }
     }
 
@@ -703,6 +852,36 @@ pub mod engine {
             Value::Unit => "unit".into(),
         }
     }
+
+    fn parse_call_1(expr: &str, name: &str) -> Option<String> {
+        let s = expr.trim();
+        let prefix = format!("{name}(");
+        if !s.starts_with(&prefix) || !s.ends_with(')') {
+            return None;
+        }
+        let inner = &s[prefix.len()..s.len() - 1];
+        Some(inner.trim().to_string())
+    }
+
+    fn parse_q_alloc(expr: &str) -> Option<String> {
+        // q_alloc(QBit)
+        parse_call_1(expr, "q_alloc").filter(|s| !s.is_empty())
+    }
+
+    fn parse_q_move(expr: &str) -> Option<String> {
+        // q_move(a)
+        parse_call_1(expr, "q_move").filter(|s| !s.is_empty())
+    }
+
+    fn parse_q_use(expr: &str) -> Option<String> {
+        // q_use(a)
+        parse_call_1(expr, "q_use").filter(|s| !s.is_empty())
+    }
+
+    fn parse_q_consume(expr: &str) -> Option<String> {
+        // q_consume(a)
+        parse_call_1(expr, "q_consume").filter(|s| !s.is_empty())
+    }
 }
 
 pub use engine::{Dvm, DvmConfig, DvmOutcome};
@@ -716,6 +895,10 @@ pub struct DvmTrace {
 
 impl From<DvmOutcome> for DvmTrace {
     fn from(o: DvmOutcome) -> Self {
-        Self { returned: o.returned, effects: o.effects, time: o.time }
+        Self {
+            returned: o.returned,
+            effects: o.effects,
+            time: o.time,
+        }
     }
 }
