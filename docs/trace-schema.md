@@ -103,6 +103,31 @@ Rules:
 
 ───────────────────────────────────────────────────────────────────────────────
 
+2.6 Φ Witness Value
+
+Φ witness stubs (v0.1) are represented as a Struct value with a fixed type name and fields.
+
+{
+  "Struct": {
+    "ty": "PhiWitness",
+    "fields": {
+      "kind": { "String": "Admissible" | "NonExistent" },
+      "id": { "String": "Φwitness:<n>" },
+      "constraint_digest": { "String": "<digest>" },
+      "note": { "String": "<stable note>" }
+    }
+  }
+}
+
+Rules:
+- `ty` MUST equal "PhiWitness".
+- `fields.kind` MUST be one of: "Admissible", "NonExistent".
+- `fields.id` MUST be deterministic within a run (v0.1 uses a monotonic counter).
+- `fields.constraint_digest` MUST equal the evaluated digest string argument provided to `phi_witness(...)`.
+- `fields.note` MUST be stable text (not host-specific, not verbose).
+
+───────────────────────────────────────────────────────────────────────────────
+
 3. Effect Encoding
 
 Effects are recorded even in `simulate` mode.
@@ -116,6 +141,9 @@ Rules:
 - `kind` is a lowercase identifier (emit, observe, seal, couple, etc).
 - `payload` is a rendered string produced by evaluating the payload expression.
 - Effects are recorded in execution order.
+
+Note:
+- If a payload expression evaluates to a Struct value, the payload is rendered as JSON for stability.
 
 ───────────────────────────────────────────────────────────────────────────────
 
