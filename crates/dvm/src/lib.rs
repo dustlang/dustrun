@@ -1036,10 +1036,14 @@ pub mod engine {
             Value::String(s) => s,
             Value::Int(n) => n.to_string(),
             Value::Bool(b) => b.to_string(),
-            Value::Struct { .. } => serde_json::to_string(&v).map_err(|e| {
-                DvmError::Runtime(format!("failed to render struct payload as json: {e}"))
-            })?,
-                .map_err(|e| DvmError::Runtime(format!("failed to render struct payload as json: {e}")))?,
+            Value::Struct { .. } => {
+                serde_json::to_string(&v).map_err(|e| {
+                    DvmError::Runtime(format!(
+                    "failed to render struct payload as json: {e}"
+                    ))
+                })?
+            }
+            .map_err(|e| DvmError::Runtime(format!("failed to render struct payload as json: {e}")))?,
             Value::Unit => "unit".into(),
         })
     }
