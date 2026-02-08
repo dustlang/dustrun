@@ -217,7 +217,10 @@ pub mod value {
         Int(i64),
         Bool(bool),
         String(String),
-        Struct { ty: String, fields: IndexMap<String, Value> },
+        Struct {
+            ty: String,
+            fields: IndexMap<String, Value>,
+        },
         Unit,
     }
 
@@ -599,11 +602,16 @@ pub use regime::*;
 
 pub mod engine {
     use super::{
-        admissibility, dir::DirStmt, effects::EffectMode, effects::EffectLog, expr,
+        admissibility,
+        dir::DirStmt,
+        effects::EffectLog,
+        effects::EffectMode,
+        expr,
         regime::{
             phi_refuse_execution, phi_validate_proc, PhiValidation, PhiWitnessBuilder, QState,
         },
-        time::TimeState, DirProgram, DirProc, DvmError, Value,
+        time::TimeState,
+        DirProc, DirProgram, DvmError, Value,
     };
     use indexmap::IndexMap;
 
@@ -640,7 +648,11 @@ pub mod engine {
 
     impl DvmFault {
         pub fn new(error: DvmError, effects: EffectLog, time: TimeState) -> Self {
-            Self { error, effects, time }
+            Self {
+                error,
+                effects,
+                time,
+            }
         }
     }
 
@@ -656,7 +668,8 @@ pub mod engine {
 
         /// Load a DIR program from JSON bytes.
         pub fn load_dir_json(&self, bytes: &[u8]) -> Result<DirProgram, DvmError> {
-            serde_json::from_slice::<DirProgram>(bytes).map_err(|e| DvmError::DirLoad(format!("{e}")))
+            serde_json::from_slice::<DirProgram>(bytes)
+                .map_err(|e| DvmError::DirLoad(format!("{e}")))
         }
 
         /// Validate basic DIR structure (v0.1).
@@ -673,7 +686,10 @@ pub mod engine {
                         return Err(DvmError::DirValidate("proc name is empty".into()));
                     }
                     if proc_.regime != "K" && proc_.regime != "Q" && proc_.regime != "Φ" {
-                        return Err(DvmError::DirValidate(format!("unknown regime: {}", proc_.regime)));
+                        return Err(DvmError::DirValidate(format!(
+                            "unknown regime: {}",
+                            proc_.regime
+                        )));
                     }
                 }
             }
@@ -683,7 +699,11 @@ pub mod engine {
         /// Compatibility API: prior callers expect `Result<Outcome, DvmError>`.
         ///
         /// This now drops partial context on failure. Prefer `run_entrypoint_trace` in new code.
-        pub fn run_entrypoint(&self, program: &DirProgram, entry: &str) -> Result<DvmOutcome, DvmError> {
+        pub fn run_entrypoint(
+            &self,
+            program: &DirProgram,
+            entry: &str,
+        ) -> Result<DvmOutcome, DvmError> {
             match self.run_entrypoint_with_fault(program, entry) {
                 Ok(ok) => Ok(ok),
                 Err(fault) => Err(fault.error),
@@ -697,10 +717,16 @@ pub mod engine {
             entry: &str,
         ) -> Result<DvmOutcome, DvmFault> {
             // validation failures have no prior context
-            self.validate_dir(program).map_err(|e| DvmFault::new(e, EffectLog::default(), TimeState::default()))?;
+            self.validate_dir(program)
+                .map_err(|e| DvmFault::new(e, EffectLog::default(), TimeState::default()))?;
 
-            let proc_ = find_proc(program, entry)
-                .ok_or_else(|| DvmFault::new(DvmError::EntrypointNotFound(entry.to_string()), EffectLog::default(), TimeState::default()))?;
+            let proc_ = find_proc(program, entry).ok_or_else(|| {
+                DvmFault::new(
+                    DvmError::EntrypointNotFound(entry.to_string()),
+                    EffectLog::default(),
+                    TimeState::default(),
+                )
+            })?;
 
             let mut env = IndexMap::<String, Value>::new();
             for p in &proc_.params {
@@ -726,7 +752,7 @@ pub mod engine {
             }
         }
 
-                /// Trace API: produce a single trace value for conformance and tooling.
+        // Trace API: produce a single trace value for conformance and tooling.
         pub fn run_entrypoint_trace(&self, program: &DirProgram, entry: &str) -> crate::DvmTrace {
             match self.run_entrypoint_with_fault(program, entry) {
                 Ok(ok) => crate::DvmTrace::Success(ok.into()),
@@ -752,7 +778,11 @@ pub mod engine {
             }
         }
 
-        fn exec_k(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmFault> {
+        fn exec_k(
+            &self,
+            proc_: &DirProc,
+            env: &mut IndexMap<String, Value>,
+        ) -> Result<DvmOutcome, DvmFault> {
             let mut effects = EffectLog::default();
             let mut time = TimeState::default();
 
@@ -903,7 +933,11 @@ pub mod engine {
             match phi_validate_proc(proc_, env) {
                 Ok(PhiValidation::LocallyAdmissible) => {}
                 Ok(PhiValidation::LocallyInadmissible { message }) => {
-                    return Err(DvmFault::new(DvmError::Inadmissible(message), EffectLog::default(), TimeState::default()));
+                    return Err(DvmFault::new(
+                        DvmError::Inadmissible(message),
+                        EffectLog::default(),
+                        TimeState::default(),
+                    ));
                 }
                 Err(e) => {
                     return Err(DvmFault::new(e, EffectLog::default(), TimeState::default()));
@@ -967,7 +1001,7 @@ pub mod engine {
                         env.insert(name.clone(), phi_witness_to_value(&w));
                         Ok(())
                     }
-                    DirStmt::Return { .. } => Ok(()),    // ignored in v0.1
+                    DirStmt::Return { .. } => Ok(()), // ignored in v0.1
                 };
 
                 if let Err(e) = step_res {
@@ -993,13 +1027,18 @@ pub mod engine {
         None
     }
 
-    fn render_payload(payload_expr: &str, env: &IndexMap<String, Value>) -> Result<String, DvmError> {
+    fn render_payload(
+        payload_expr: &str,
+        env: &IndexMap<String, Value>,
+    ) -> Result<String, DvmError> {
         let v = expr::eval(payload_expr, env)?;
         Ok(match v {
             Value::String(s) => s,
             Value::Int(n) => n.to_string(),
             Value::Bool(b) => b.to_string(),
-            Value::Struct { .. } => serde_json::to_string(&v)
+            Value::Struct { .. } => serde_json::to_string(&v).map_err(|e| {
+                DvmError::Runtime(format!("failed to render struct payload as json: {e}"))
+            })?,
                 .map_err(|e| DvmError::Runtime(format!("failed to render struct payload as json: {e}")))?,
             Value::Unit => "unit".into(),
         })
