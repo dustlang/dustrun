@@ -10,6 +10,7 @@
 //! - write programs that request witnesses,
 //! - test compilation + runtime wiring,
 //! - build tooling around witness transport,
+
 //! without Φ execution being implemented.
 //!
 //! This file defines the canonical witness envelope and stable serialization.
