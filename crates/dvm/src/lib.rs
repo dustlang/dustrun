@@ -845,7 +845,11 @@ pub mod engine {
             })
         }
 
-        fn exec_q(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmFault> {
+        fn exec_q(
+            &self,
+            proc_: &DirProc,
+            env: &mut IndexMap<String, Value>,
+        ) -> Result<DvmOutcome, DvmFault> {
             let mut effects = EffectLog::default();
             let mut time = TimeState::default();
             let mut q = QState::new();
@@ -927,7 +931,11 @@ pub mod engine {
             })
         }
 
-        fn exec_phi(&self, proc_: &DirProc, env: &mut IndexMap<String, Value>) -> Result<DvmOutcome, DvmFault> {
+        fn exec_phi(
+            &self,
+            proc_: &DirProc,
+            env: &mut IndexMap<String, Value>,
+        ) -> Result<DvmOutcome, DvmFault> {
             // v0.1: validate constraints (local host-mode) then refuse execution deterministically,
             // but allow construction of Φ witness stubs as a host intrinsic.
             match phi_validate_proc(proc_, env) {
@@ -983,7 +991,7 @@ pub mod engine {
                         Ok(())
                     }
 
-// --- re
+                    // --- re
                     DirStmt::Effect { kind, payload } => {
                         let rendered = render_payload(payload, env)?;
                         effects.push(kind.clone(), rendered);
@@ -1038,12 +1046,9 @@ pub mod engine {
             Value::Bool(b) => b.to_string(),
             Value::Struct { .. } => {
                 serde_json::to_string(&v).map_err(|e| {
-                    DvmError::Runtime(format!(
-                    "failed to render struct payload as json: {e}"
-                    ))
+                    DvmError::Runtime(format!("failed to render struct payload as json: {e}"))
                 })?
             }
-            .map_err(|e| DvmError::Runtime(format!("failed to render struct payload as json: {e}")))?,
             Value::Unit => "unit".into(),
         })
     }
