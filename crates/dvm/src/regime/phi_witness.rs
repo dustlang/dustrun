@@ -11,9 +11,8 @@
 //! - test compilation + runtime wiring,
 //! - build tooling around witness transport,
 
-//! without Φ execution being implemented.
-//!
-//! This file defines the canonical witness envelope and stable serialization.
+//! - This module provides witness stubs
+//!   without Φ execution being implemented.
 
 use crate::DvmError;
 use serde::{Deserialize, Serialize};
