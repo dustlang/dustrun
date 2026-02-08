@@ -1,13 +1,11 @@
-# File: crates/dvm/src/regime/q.rs
-#
-# Q-regime host semantics (v0.1):
-# - Enforces linear (non-clonable) resource discipline deterministically.
-# - Does NOT simulate quantum physics amplitudes.
-# - Provides the semantic guardrails needed to develop and test Q-regime programs
-#   without quantum hardware.
-#
-# This module is intentionally backend-agnostic: it can later delegate to
-# quantum hardware backends while preserving DPL semantics.
+//! Q-regime host semantics (v0.1):
+//! - Enforces linear (non-clonable) resource discipline deterministically.
+//! - Does NOT simulate quantum physics amplitudes.
+//! - Provides the semantic guardrails needed to develop and test Q-regime programs
+//!   without quantum hardware.
+//!
+//! This module is intentionally backend-agnostic: it can later delegate to
+//! quantum hardware backends while preserving DPL semantics.
 
 use crate::DvmError;
 use indexmap::IndexMap;
@@ -20,7 +18,7 @@ pub struct QResId(pub String);
 /// The lifecycle state of a linear quantum resource.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum QResState {
-    /// Allocated and currently owned by some binding (variable) or scope.
+    /// Allocated and currently usable.
     Live,
 
     /// Consumed by an irreversible operation (e.g., measurement) or explicit consume.
@@ -32,8 +30,8 @@ pub enum QResState {
 
 /// Metadata for a quantum resource.
 ///
-/// NOTE: We keep this minimal in v0.1. Future revisions can add:
-/// - declared type (qubit register shape)
+/// NOTE: Kept minimal in v0.1. Future revisions can add:
+/// - declared shape/register width
 /// - backend handle
 /// - provenance (which proc allocated it)
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -73,10 +71,6 @@ impl QState {
     }
 
     /// Allocate a new linear quantum resource and bind it to a name.
-    ///
-    /// This enforces:
-    /// - name must not already exist
-    /// - resource begins Live
     pub fn alloc(&mut self, name: &str, ty: &str) -> Result<(), DvmError> {
         if self.env.contains_key(name) {
             return Err(DvmError::Inadmissible(format!(
@@ -109,8 +103,6 @@ impl QState {
     /// After move:
     /// - `dst` refers to the same resource
     /// - `src` is marked moved and cannot be used again
-    ///
-    /// This is the fundamental "no-clone" enforcement operation.
     pub fn mov(&mut self, src: &str, dst: &str) -> Result<(), DvmError> {
         if self.env.contains_key(dst) {
             return Err(DvmError::Inadmissible(format!(
@@ -131,7 +123,7 @@ impl QState {
         }
 
         // Ensure resource is live
-        self.ensure_live(&src_binding.res, src)?;
+        self.ensure_live(&src_binding.res, "q_move", src)?;
 
         // Mark src as moved
         if let Some(b) = self.env.get_mut(src) {
@@ -155,8 +147,6 @@ impl QState {
     /// After consume:
     /// - the binding becomes moved (cannot be reused)
     /// - the resource becomes Consumed (cannot be used by any other alias)
-    ///
-    /// This is stricter than a move: it ends the resource lifecycle.
     pub fn consume(&mut self, name: &str, reason: &str) -> Result<(), DvmError> {
         let binding = self
             .env
@@ -170,7 +160,7 @@ impl QState {
             )));
         }
 
-        self.ensure_live(&binding.res, name)?;
+        self.ensure_live(&binding.res, "q_consume", name)?;
 
         // Mark resource consumed
         if let Some(meta) = self.resources.get_mut(&binding.res) {
@@ -182,8 +172,7 @@ impl QState {
             b.moved = true;
         }
 
-        // Deterministic diagnostic note for future tracing
-        // (kept here as a hook; trace integration happens in engine wiring step)
+        // Deterministic diagnostic hook (future trace integration).
         let _ = reason;
 
         Ok(())
@@ -193,28 +182,24 @@ impl QState {
     ///
     /// This does not consume the resource, but it must be Live and the binding must not be moved.
     pub fn require_usable(&self, name: &str, op: &str) -> Result<QResId, DvmError> {
-        let binding = self
-            .env
-            .get(name)
-            .ok_or_else(|| DvmError::Inadmissible(format!("Q use failed: unknown binding: {name}")))?;
+        let binding = self.env.get(name).ok_or_else(|| {
+            DvmError::Inadmissible(format!("Q use failed: unknown binding: {name} (op={op})"))
+        })?;
 
         if binding.moved {
-            return Err(DvmError::Inadmissible(format!(
-                "Q use failed: binding already moved: {name} (op={op})"
-            )));
+            return Err(DvmError::Inadmissible(Self::err_use_moved(name, op)));
         }
 
-        self.ensure_live(&binding.res, name)?;
+        self.ensure_live(&binding.res, op, name)?;
         Ok(binding.res.clone())
     }
 
     /// Get the declared type for a binding's resource (if usable).
     pub fn resource_type(&self, name: &str) -> Result<String, DvmError> {
         let id = self.require_usable(name, "type_query")?;
-        let meta = self
-            .resources
-            .get(&id)
-            .ok_or_else(|| DvmError::Runtime(format!("Q internal: missing resource meta for {}", id.0)))?;
+        let meta = self.resources.get(&id).ok_or_else(|| {
+            DvmError::Runtime(format!("Q internal: missing resource meta for {}", id.0))
+        })?;
         Ok(meta.ty.clone())
     }
 
@@ -236,7 +221,13 @@ impl QState {
         QResId(format!("qres:{}:{}", hint, self.alloc_counter))
     }
 
-    fn ensure_live(&self, id: &QResId, binding_name: &str) -> Result<(), DvmError> {
+    fn err_use_moved(name: &str, op: &str) -> String {
+        // CANONICAL ERROR STRING (stable conformance surface)
+        // Keep this exact structure unless a versioned trace/error format change is intended.
+        format!("Q use failed: binding already moved: {name} (op={op})")
+    }
+
+    fn ensure_live(&self, id: &QResId, op: &str, binding_name: &str) -> Result<(), DvmError> {
         let meta = self.resources.get(id).ok_or_else(|| {
             DvmError::Runtime(format!(
                 "Q internal: binding '{binding_name}' references missing resource '{}'",
@@ -247,11 +238,11 @@ impl QState {
         match meta.state {
             QResState::Live => Ok(()),
             QResState::Consumed => Err(DvmError::Inadmissible(format!(
-                "Q violation: resource '{}' already consumed (binding '{binding_name}')",
+                "Q use failed: resource already consumed: {} (binding={binding_name} op={op})",
                 id.0
             ))),
             QResState::Invalid => Err(DvmError::Inadmissible(format!(
-                "Q violation: resource '{}' invalid (binding '{binding_name}')",
+                "Q use failed: resource invalid: {} (binding={binding_name} op={op})",
                 id.0
             ))),
         }
@@ -286,7 +277,13 @@ mod tests {
         q.mov("a", "b").unwrap();
 
         assert!(q.require_usable("b", "X").is_ok());
-        assert!(q.require_usable("a", "X").is_err()); // moved
+        let err = q.require_usable("a", "q_use").unwrap_err();
+        match err {
+            DvmError::Inadmissible(msg) => {
+                assert_eq!(msg, "Q use failed: binding already moved: a (op=q_use)");
+            }
+            other => panic!("unexpected error: {other:?}"),
+        }
     }
 
     #[test]
@@ -295,14 +292,11 @@ mod tests {
         q.alloc("a", "QBit").unwrap();
         q.mov("a", "b").unwrap();
 
-        // consume b -> resource consumed
         q.consume("b", "measure").unwrap();
 
-        // b is moved, a is moved, resource is consumed: no one can use
         assert!(q.require_usable("b", "H").is_err());
         assert!(q.require_usable("a", "H").is_err());
 
-        // even if we had another alias (we do not), resource would still be consumed.
         let snap = q.snapshot();
         assert_eq!(snap.resources.len(), 1);
         let meta = snap.resources.values().next().unwrap();
