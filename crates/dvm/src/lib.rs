@@ -726,15 +726,29 @@ pub mod engine {
             }
         }
 
-        /// Trace API: produce a single trace value for conformance and tooling.
+                /// Trace API: produce a single trace value for conformance and tooling.
         pub fn run_entrypoint_trace(&self, program: &DirProgram, entry: &str) -> crate::DvmTrace {
             match self.run_entrypoint_with_fault(program, entry) {
                 Ok(ok) => crate::DvmTrace::Success(ok.into()),
-                Err(fault) => crate::DvmTrace::Failure(crate::DvmFailureTrace {
-                    error: crate::TraceError::from(&fault.error),
-                    effects: Some(fault.effects),
-                    time: Some(fault.time),
-                }),
+                Err(fault) => {
+                    let effects = if fault.effects.events.is_empty() {
+                        None
+                    } else {
+                        Some(fault.effects)
+                    };
+
+                    let time = if fault.time.tick.0 == 0 {
+                        None
+                    } else {
+                        Some(fault.time)
+                    };
+
+                    crate::DvmTrace::Failure(crate::DvmFailureTrace {
+                        error: crate::TraceError::from(&fault.error),
+                        effects,
+                        time,
+                    })
+                }
             }
         }
 
