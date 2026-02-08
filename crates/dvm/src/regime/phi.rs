@@ -13,7 +13,7 @@
 //! global proofs.
 
 use crate::DvmError;
-use crate::{admissibility, DirProc, Value};
+use crate::{DirProc, Value};
 use indexmap::IndexMap;
 
 /// Φ-regime validation result.
