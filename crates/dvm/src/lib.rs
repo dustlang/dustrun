@@ -1122,7 +1122,7 @@ pub mod engine {
             fields,
         }
     }
-    
+
     fn phi_digest_of_predicate(pred: &str) -> String {
         // v0.1 digest is a stable textual encoding.
         // Future versions can switch to canonical AST hashing with versioning.
