@@ -1,0 +1,6 @@
+{
+  "error": {
+    "kind": "Inadmissible",
+    "message": "constraint failed: false"
+  }
+}
