@@ -655,14 +655,10 @@ pub mod engine {
             }
         }
     }
-    
+
     impl From<DvmError> for DvmFault {
         fn from(error: DvmError) -> Self {
-            DvmFault::new(
-                error,
-                EffectLog::default(),
-                TimeState::default(),
-            )
+            DvmFault::new(error, EffectLog::default(), TimeState::default())
         }
     }
 
