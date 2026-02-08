@@ -198,12 +198,16 @@ impl Runner {
         let golden: DvmTrace = serde_json::from_slice(&golden_bytes)?;
 
         if &golden != produced {
+            let golden_s = serde_json::to_string_pretty(&golden)?;
+            let produced_s = serde_json::to_string_pretty(produced)?;
             return Err(ConformanceError::GoldenMismatch(format!(
-                "fixture '{}' produced trace does not match golden.\nfixture_file: {}\ndir: {}\nexpected: {}\n",
+                "fixture '{}' produced trace does not match golden.\nfixture_file: {}\ndir: {}\nexpected: {}\n\n--- golden ---\n{}\n\n--- produced ---\n{}\n",
                 fixture.name,
                 fixture_file.display(),
                 fixture.dir_path(fixture_file).display(),
                 golden_path.display(),
+                golden_s,
+                produced_s,
             )));
         }
 
