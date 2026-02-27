@@ -1,11 +1,11 @@
-//! Q-regime host semantics (v0.1):
-//! - Enforces linear (non-clonable) resource discipline deterministically.
-//! - Does NOT simulate quantum physics amplitudes.
-//! - Provides the semantic guardrails needed to develop and test Q-regime programs
-//!   without quantum hardware.
-//!
-//! This module is intentionally backend-agnostic: it can later delegate to
-//! quantum hardware backends while preserving DPL semantics.
+// File: q.rs - This file is part of the DPL Toolchain
+// Copyright (c) 2026 Dust LLC, and Contributors
+// Description:
+//   Q-regime host semantics (v0.1).
+//   Enforces linear (non-clonable) resource discipline deterministically.
+//   Does NOT simulate quantum physics - provides semantic guardrails
+//   for Q-regime program development without quantum hardware.
+//   Backend-agnostic (can delegate to quantum backends later).
 
 use crate::DvmError;
 use indexmap::IndexMap;

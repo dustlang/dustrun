@@ -1,9 +1,9 @@
-// File: crates/dustrun/src/args.rs
-//
-// Command-line argument definitions for the `dustrun` executable.
-//
-// This file defines the public CLI contract only.
-// It does NOT contain execution logic or semantics.
+// File: args.rs - This file is part of the DPL Toolchain
+// Copyright (c) 2026 Dust LLC, and Contributors
+// Description:
+//   Command-line argument definitions for `dustrun` executable.
+//   Defines the public CLI contract only (no execution logic).
+//   Provides: Args struct, EffectModeArg, Target triple handling.
 
 use clap::{Parser, ValueEnum};
 

@@ -1,13 +1,15 @@
-//! Φ-regime witness stubs (v0.1).
-//!
-//! In the Φ regime, execution is governed by admissibility and global consistency.
-//! A **witness** is the program-visible artifact that attests:
-//! - a constraint set is admissible under the regime rules, or
-//! - a constraint set is non-existent (inadmissible) under the regime rules.
-//!
-//! In v0.1, we do not build global witnesses yet.
-//! We provide deterministic **stub witness objects** so developers can:
-//! - write programs that request witnesses,
+// File: phi_witness.rs - This file is part of the DPL Toolchain
+// Copyright (c) 2026 Dust LLC, and Contributors
+// Description:
+//   Φ-regime witness stubs (v0.1).
+//   In Φ regime, execution is governed by admissibility and global consistency.
+//   A witness attests:
+//     - Constraint set is admissible, or
+//     - Constraint set is non-existent (inadmissible)
+//   v0.1 provides deterministic stub witness objects for development.
+//   Exports: Witness, WitnessKind, witness_new(), witness_check()
+
+use serde::{Deserialize, Serialize};
 //! - test compilation + runtime wiring,
 //! - build tooling around witness transport,
 

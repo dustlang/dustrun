@@ -1,4 +1,12 @@
-// File: crates/dustrun/src/main.rs
+// File: main.rs - This file is part of the DPL Toolchain
+// Copyright (c) 2026 Dust LLC, and Contributors
+// Description:
+//   Executable entry point for `dustrun` - Dust Virtual Machine runtime.
+//   Provides:
+//     - Dust program execution
+//     - Effect tracing (--trace)
+//     - Deterministic logging
+//     - Multiple effect modes (emit, trace, quiet)
 
 mod args;
 

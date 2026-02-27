@@ -1,9 +1,12 @@
-// dustrun/crates/dvm/src/runtime.rs
-//
-// DPL v0.2 Runtime Support
-//
-// This module provides runtime support functions for compiled Dust programs,
-// including memory management, string operations, and error handling.
+// File: runtime.rs - This file is part of the DPL Toolchain
+// Copyright (c) 2026 Dust LLC, and Contributors
+// Description:
+//   DPL v0.2 Runtime Support for compiled Dust programs.
+//   Provides:
+//     - Global heap allocator (System)
+//     - Memory management (alloc, dealloc)
+//     - String operations
+//     - Error handling utilities
 
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::ptr;

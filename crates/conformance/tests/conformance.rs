@@ -1,13 +1,12 @@
-// crates/conformance/tests/conformance.rs
-//
-// Conformance test runner.
-//
-// This test scans a fixture directory for JSON fixture files and checks that
-// produced DVM traces match golden traces deterministically.
-//
-// To bless (rewrite) golden traces:
-//   DUST_BLESS=1 cargo test -p dustrun-conformance
-//
+// File: conformance.rs - This file is part of the DPL Toolchain
+// Copyright (c) 2026 Dust LLC, and Contributors
+// Description:
+//   Conformance test runner for DVM.
+//   Scans fixture directory for JSON fixture files.
+//   Checks that produced DVM traces match golden traces deterministically.
+//   To bless (rewrite) golden traces: DUST_BLESS=1 cargo test -p dustrun-conformance
+
+use std::path::PathBuf;
 // Fixtures live in:
 //   tests/fixtures/*.json
 //

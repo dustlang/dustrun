@@ -1,12 +1,12 @@
-//! Dust Virtual Machine (DVM) — reference executor for DPL.
-//!
-//! This crate implements the normative execution semantics for DIR artifacts:
-//! - K-regime: deterministic classical execution (reference semantics)
-//! - Q-regime: linear resource semantics enforcement (host-mode semantics)
-//! - Φ-regime: validation + deterministic refusal (v0.1), with witness stub wiring
-//!
-//! This crate contains NO compiler logic and NO CLI logic.
-//! It consumes DIR and produces execution traces or refusal/failure traces.
+// File: lib.rs - This file is part of the DPL Toolchain
+// Copyright (c) 2026 Dust LLC, and Contributors
+// Description:
+//   Dust Virtual Machine (DVM) - reference executor for DPL.
+//   Implements normative execution semantics for DIR artifacts:
+//     - K-regime: deterministic classical execution
+//     - Q-regime: linear resource semantics enforcement
+//     - Φ-regime: validation + deterministic refusal
+//   NO compiler logic, NO CLI logic. Consumes DIR, produces traces.
 
 // use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};

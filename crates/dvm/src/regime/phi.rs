@@ -1,13 +1,15 @@
-//! Φ-regime host-mode semantics (v0.1):
-//!
-//! This module provides **validation-only** semantics for Φ-regime programs.
-//! It does NOT execute Φ-regime computation yet.
-//!
-//! Responsibilities in v0.1:
-//! - Recognize Φ-regime as a distinct regime.
-//! - Provide deterministic, semantically meaningful refusal for execution.
-//! - Provide hooks for admissibility witness generation.
-//!
+// File: phi.rs - This file is part of the DPL Toolchain
+// Copyright (c) 2026 Dust LLC, and Contributors
+// Description:
+//   Φ-regime host-mode semantics (v0.1).
+//   Provides validation-only semantics for Φ-regime programs.
+//   Responsibilities:
+//     - Recognize Φ-regime as distinct
+//     - Deterministic refusal for execution
+//     - Hooks for admissibility witness generation
+//   Does NOT execute Φ-regime computation yet.
+
+use crate::DvmError;
 //! In v0.1, witnesses are **stub artifacts** with deterministic structure.
 //! They are produced for `Prove` and `phi_witness(...)` but do not constitute
 //! global proofs.

@@ -1,8 +1,10 @@
-// Regime module root for the Dust Virtual Machine (DVM).
-//
-// This module groups regime-specific semantic enforcement and host-mode execution
-// components. Regime semantics are enforced by the DVM regardless of whether
-// execution is native, VM, or delegated to specialized backends.
+// File: mod.rs - This file is part of the DPL Toolchain
+// Copyright (c) 2026 Dust LLC, and Contributors
+// Description:
+//   Regime module root for DVM (Dust Virtual Machine).
+//   Groups regime-specific semantic enforcement and host-mode execution.
+//   Regimes: K (deterministic), Q (linear resources), Φ (validation)
+//   Exports: q, phi, phi_witness modules and types
 
 pub mod phi;
 pub mod phi_witness;
