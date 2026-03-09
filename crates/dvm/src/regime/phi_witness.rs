@@ -9,13 +9,10 @@
 //   v0.1 provides deterministic stub witness objects for development.
 //   Exports: Witness, WitnessKind, witness_new(), witness_check()
 
-use serde::{Deserialize, Serialize};
-//! - test compilation + runtime wiring,
-//! - build tooling around witness transport,
-
-//! - This module provides witness stubs
-//!   without Φ execution being implemented.
-
+// This module provides witness stubs to:
+// - test compilation + runtime wiring
+// - build tooling around witness transport
+// without Φ execution being implemented.
 use crate::DvmError;
 use serde::{Deserialize, Serialize};
 

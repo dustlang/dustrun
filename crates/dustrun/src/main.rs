@@ -16,11 +16,6 @@ use dust_dvm::{Dvm, DvmConfig, DvmTrace, EffectMode};
 use std::fs;
 
 fn main() {
-    // Deterministic logging initialization:
-    // - respects RUST_LOG if set
-    // - otherwise defaults to info when --trace is enabled, warn otherwise
-    init_logging();
-
     let args = Args::parse();
 
     let bytes = match fs::read(&args.dir_path) {
@@ -99,21 +94,6 @@ fn main() {
         println!("effect_mode: {}", args.effects.as_str());
         println!("entry: {}", args.entry);
     }
-}
-
-fn init_logging() {
-    // env_logger is deterministic given fixed inputs; we avoid timestamps by default.
-    // Users can still opt-in via RUST_LOG and env_logger formatting, but default is stable.
-    let mut builder =
-        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn"));
-
-    // Remove timestamps for deterministic output
-    builder.format(|buf, record| {
-        use std::io::Write;
-        writeln!(buf, "[{}] {}", record.level(), record.args())
-    });
-
-    let _ = builder.try_init();
 }
 
 fn format_value(v: &dust_dvm::Value) -> String {

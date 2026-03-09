@@ -27,11 +27,4 @@ thiserror = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 log = { workspace = true }
-indexmap = { version = "2.2", features = ["serde"] }
-time = { workspace = true }
-
-# Internal invariants and deterministic collections
-once_cell = "1.19"
-
-[dev-dependencies]
-pretty_assertions = { workspace = true }
+indexmap = { workspace = true, features = ["serde"] }

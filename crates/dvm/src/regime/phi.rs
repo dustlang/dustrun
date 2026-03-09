@@ -9,11 +9,9 @@
 //     - Hooks for admissibility witness generation
 //   Does NOT execute Φ-regime computation yet.
 
-use crate::DvmError;
-//! In v0.1, witnesses are **stub artifacts** with deterministic structure.
-//! They are produced for `Prove` and `phi_witness(...)` but do not constitute
-//! global proofs.
-
+// In v0.1, witnesses are stub artifacts with deterministic structure.
+// They are produced for `Prove` and `phi_witness(...)` but do not constitute
+// global proofs.
 use crate::DvmError;
 use crate::{DirProc, Value};
 use indexmap::IndexMap;

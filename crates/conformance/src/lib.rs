@@ -12,7 +12,6 @@ use serde::{Deserialize, Serialize};
 // It is normative for conformance enforcement within the dustrun repository.
 
 use dust_dvm::{Dvm, DvmConfig, DvmError, DvmTrace, EffectMode};
-use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 use thiserror::Error;

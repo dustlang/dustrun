@@ -3,69 +3,14 @@
 version = 3
 
 [[package]]
-name = "aho-corasick"
-version = "1.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ddd31a130427c27518df266943a5308ed92d4b226cc639f5a8f1002816174301"
-dependencies = [
- "memchr",
-]
-
-[[package]]
-name = "anstream"
-version = "0.6.21"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43d5b281e737544384e969a5ccad3f1cdd24b48086a0fc1b2a5262a26b8f4f4a"
-dependencies = [
- "anstyle",
- "anstyle-parse",
- "anstyle-query",
- "anstyle-wincon",
- "colorchoice",
- "is_terminal_polyfill",
- "utf8parse",
-]
-
-[[package]]
 name = "anstyle"
 version = "1.0.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5192cca8006f1fd4f7237516f40fa183bb07f8fbdfedaa0036de5ea9b0b45e78"
-
-[[package]]
-name = "anstyle-parse"
-version = "0.2.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e7644824f0aa2c7b9384579234ef10eb7efb6a0deb83f9630a49594dd9c15c2"
-dependencies = [
- "utf8parse",
-]
-
-[[package]]
-name = "anstyle-query"
-version = "1.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc"
-dependencies = [
- "windows-sys",
-]
-
-[[package]]
-name = "anstyle-wincon"
-version = "3.0.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "291e6a250ff86cd4a820112fb8898808a366d8f9f58ce16d1f538353ad55747d"
-dependencies = [
- "anstyle",
- "once_cell_polyfill",
- "windows-sys",
-]
+source = "git+https://github.com/dustsoftware/anstyle.git?rev=14dd743496d1614f8261a093ce755f26d8e2069d#14dd743496d1614f8261a093ce755f26d8e2069d"
 
 [[package]]
 name = "clap"
-version = "4.5.58"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63be97961acde393029492ce0be7a1af7e323e6bae9511ebfac33751be5e6806"
+version = "4.5.60"
+source = "git+https://github.com/dustsoftware/clap.git?rev=20aac9d46e0852292bd43d845b6d9cb69c598c9e#20aac9d46e0852292bd43d845b6d9cb69c598c9e"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -73,21 +18,17 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.58"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f13174bda5dfd69d7e947827e5af4b0f2f94a4a3ee92912fba07a66150f21e2"
+version = "4.5.60"
+source = "git+https://github.com/dustsoftware/clap.git?rev=20aac9d46e0852292bd43d845b6d9cb69c598c9e#20aac9d46e0852292bd43d845b6d9cb69c598c9e"
 dependencies = [
- "anstream",
  "anstyle",
  "clap_lex",
- "strsim",
 ]
 
 [[package]]
 name = "clap_derive"
 version = "4.5.55"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a92793da1a46a5f2a02a6f4c46c6496b28c43638adea8306fcb0caa1634f24e5"
+source = "git+https://github.com/dustsoftware/clap.git?rev=20aac9d46e0852292bd43d845b6d9cb69c598c9e#20aac9d46e0852292bd43d845b6d9cb69c598c9e"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -98,29 +39,7 @@ dependencies = [
 [[package]]
 name = "clap_lex"
 version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a822ea5bc7590f9d40f1ba12c0dc3c2760f3482c6984db1573ad11031420831"
-
-[[package]]
-name = "colorchoice"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
-
-[[package]]
-name = "deranged"
-version = "0.5.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc3dc5ad92c2e2d1c193bbbbdf2ea477cb81331de4f3103f267ca18368b988c4"
-dependencies = [
- "powerfmt",
-]
-
-[[package]]
-name = "diff"
-version = "0.1.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56254986775e3233ffa9c4d7d3faaf6d36a2c09d30b20687e9f88bc8bafc16c8"
+source = "git+https://github.com/dustsoftware/clap.git?rev=20aac9d46e0852292bd43d845b6d9cb69c598c9e#20aac9d46e0852292bd43d845b6d9cb69c598c9e"
 
 [[package]]
 name = "dust-dvm"
@@ -128,23 +47,18 @@ version = "0.1.0"
 dependencies = [
  "indexmap",
  "log",
- "once_cell",
- "pretty_assertions",
  "serde",
  "serde_json",
  "thiserror",
- "time",
 ]
 
 [[package]]
 name = "dustrun"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "clap",
  "dust-dvm",
- "env_logger",
  "log",
- "pretty_assertions",
  "serde",
  "serde_json",
 ]
@@ -155,167 +69,55 @@ version = "0.1.0"
 dependencies = [
  "dust-dvm",
  "indexmap",
- "pretty_assertions",
  "serde",
  "serde_json",
  "thiserror",
 ]
 
 [[package]]
-name = "env_filter"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a1c3cc8e57274ec99de65301228b537f1e4eedc1b8e0f9411c6caac8ae7308f"
-dependencies = [
- "log",
- "regex",
-]
-
-[[package]]
-name = "env_logger"
-version = "0.11.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2daee4ea451f429a58296525ddf28b45a3b64f1acf6587e2067437bb11e218d"
-dependencies = [
- "anstream",
- "anstyle",
- "env_filter",
- "jiff",
- "log",
-]
-
-[[package]]
 name = "equivalent"
 version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
+source = "git+https://github.com/dustsoftware/equivalent.git?rev=44cdd44f8b8ebb5f9ae096c7550a5e74ffb7d6ae#44cdd44f8b8ebb5f9ae096c7550a5e74ffb7d6ae"
 
 [[package]]
 name = "hashbrown"
-version = "0.16.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
+version = "0.14.5"
+source = "git+https://github.com/dustsoftware/hashbrown.git?rev=025d0f58b62d074f5fd660a22fe293cdc237d589#025d0f58b62d074f5fd660a22fe293cdc237d589"
 
 [[package]]
 name = "heck"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
+source = "git+https://github.com/dustsoftware/heck.git?rev=252c1906cefefb8d13ecad7fce7b8f27ce6437e0#252c1906cefefb8d13ecad7fce7b8f27ce6437e0"
 
 [[package]]
 name = "indexmap"
-version = "2.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7714e70437a7dc3ac8eb7e6f8df75fd8eb422675fc7678aff7364301092b1017"
+version = "2.5.0"
+source = "git+https://github.com/dustsoftware/indexmap.git?rev=48ed49017c9af536bda2916c78e77b619163a2f2#48ed49017c9af536bda2916c78e77b619163a2f2"
 dependencies = [
  "equivalent",
  "hashbrown",
  "serde",
- "serde_core",
 ]
-
-[[package]]
-name = "is_terminal_polyfill"
-version = "1.70.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
 
 [[package]]
 name = "itoa"
 version = "1.0.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
-
-[[package]]
-name = "jiff"
-version = "0.2.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c867c356cc096b33f4981825ab281ecba3db0acefe60329f044c1789d94c6543"
-dependencies = [
- "jiff-static",
- "log",
- "portable-atomic",
- "portable-atomic-util",
- "serde_core",
-]
-
-[[package]]
-name = "jiff-static"
-version = "0.2.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7946b4325269738f270bb55b3c19ab5c5040525f83fd625259422a9d25d9be5"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
+source = "git+https://github.com/dustsoftware/itoa.git?rev=21d610902fb79eb16b7c155d25574fb7376d9e97#21d610902fb79eb16b7c155d25574fb7376d9e97"
 
 [[package]]
 name = "log"
 version = "0.4.29"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
+source = "git+https://github.com/dustsoftware/log.git?rev=b1e2df7bce7a1b685aa9bfd1db0a5cac1f0fc27d#b1e2df7bce7a1b685aa9bfd1db0a5cac1f0fc27d"
 
 [[package]]
 name = "memchr"
 version = "2.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
-
-[[package]]
-name = "num-conv"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf97ec579c3c42f953ef76dbf8d55ac91fb219dde70e49aa4a6b7d74e9919050"
-
-[[package]]
-name = "once_cell"
-version = "1.21.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
-
-[[package]]
-name = "once_cell_polyfill"
-version = "1.70.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
-
-[[package]]
-name = "portable-atomic"
-version = "1.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c33a9471896f1c69cecef8d20cbe2f7accd12527ce60845ff44c153bb2a21b49"
-
-[[package]]
-name = "portable-atomic-util"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a9db96d7fa8782dd8c15ce32ffe8680bbd1e978a43bf51a34d39483540495f5"
-dependencies = [
- "portable-atomic",
-]
-
-[[package]]
-name = "powerfmt"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "439ee305def115ba05938db6eb1644ff94165c5ab5e9420d1c1bcedbba909391"
-
-[[package]]
-name = "pretty_assertions"
-version = "1.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ae130e2f271fbc2ac3a40fb1d07180839cdbbe443c7a27e1e3c13c5cac0116d"
-dependencies = [
- "diff",
- "yansi",
-]
+source = "git+https://github.com/dustsoftware/memchr.git?rev=886ca4ca4820297191c6e9f7b023dc356f31a4d1#886ca4ca4820297191c6e9f7b023dc356f31a4d1"
 
 [[package]]
 name = "proc-macro2"
 version = "1.0.106"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934"
+source = "git+https://github.com/dustsoftware/proc-macro2.git?rev=58ab776b95a4c2865554badbb6629c50971a9118#58ab776b95a4c2865554badbb6629c50971a9118"
 dependencies = [
  "unicode-ident",
 ]
@@ -323,46 +125,15 @@ dependencies = [
 [[package]]
 name = "quote"
 version = "1.0.44"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21b2ebcf727b7760c461f091f9f0f539b77b8e87f2fd88131e7f1b433b3cece4"
+source = "git+https://github.com/dustsoftware/quote.git?rev=ad9fb4019efc3f34e5d3b9be416199937f7a8ee3#ad9fb4019efc3f34e5d3b9be416199937f7a8ee3"
 dependencies = [
  "proc-macro2",
 ]
 
 [[package]]
-name = "regex"
-version = "1.12.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e10754a14b9137dd7b1e3e5b0493cc9171fdd105e0ab477f51b72e7f3ac0e276"
-dependencies = [
- "aho-corasick",
- "memchr",
- "regex-automata",
- "regex-syntax",
-]
-
-[[package]]
-name = "regex-automata"
-version = "0.4.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e1dd4122fc1595e8162618945476892eefca7b88c52820e74af6262213cae8f"
-dependencies = [
- "aho-corasick",
- "memchr",
- "regex-syntax",
-]
-
-[[package]]
-name = "regex-syntax"
-version = "0.8.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a96887878f22d7bad8a3b6dc5b7440e0ada9a245242924394987b21cf2210a4c"
-
-[[package]]
 name = "serde"
 version = "1.0.228"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e"
+source = "git+https://github.com/dustsoftware/serde.git?rev=a866b336f14aa57a07f0d0be9f8762746e64ecb4#a866b336f14aa57a07f0d0be9f8762746e64ecb4"
 dependencies = [
  "serde_core",
  "serde_derive",
@@ -371,8 +142,7 @@ dependencies = [
 [[package]]
 name = "serde_core"
 version = "1.0.228"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad"
+source = "git+https://github.com/dustsoftware/serde.git?rev=a866b336f14aa57a07f0d0be9f8762746e64ecb4#a866b336f14aa57a07f0d0be9f8762746e64ecb4"
 dependencies = [
  "serde_derive",
 ]
@@ -380,8 +150,7 @@ dependencies = [
 [[package]]
 name = "serde_derive"
 version = "1.0.228"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
+source = "git+https://github.com/dustsoftware/serde.git?rev=a866b336f14aa57a07f0d0be9f8762746e64ecb4#a866b336f14aa57a07f0d0be9f8762746e64ecb4"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -391,8 +160,7 @@ dependencies = [
 [[package]]
 name = "serde_json"
 version = "1.0.149"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83fc039473c5595ace860d8c4fafa220ff474b3fc6bfdb4293327f1a37e94d86"
+source = "git+https://github.com/dustsoftware/json.git?rev=4f6dbfac79647d032b0997b5ab73022340c6dab7#4f6dbfac79647d032b0997b5ab73022340c6dab7"
 dependencies = [
  "itoa",
  "memchr",
@@ -402,16 +170,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "strsim"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
-
-[[package]]
 name = "syn"
-version = "2.0.115"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e614ed320ac28113fa64972c4262d5dbc89deacdfd00c34a3e4cea073243c12"
+version = "2.0.117"
+source = "git+https://github.com/dustsoftware/syn.git?rev=7bcb37cdb3399977658c8b52d2441d37e42e48f2#7bcb37cdb3399977658c8b52d2441d37e42e48f2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -421,8 +182,7 @@ dependencies = [
 [[package]]
 name = "thiserror"
 version = "1.0.69"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
+source = "git+https://github.com/dustsoftware/thiserror.git?rev=41938bd3a03a70d34ed8e53d99c89c770c7c9c41#41938bd3a03a70d34ed8e53d99c89c770c7c9c41"
 dependencies = [
  "thiserror-impl",
 ]
@@ -430,8 +190,7 @@ dependencies = [
 [[package]]
 name = "thiserror-impl"
 version = "1.0.69"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+source = "git+https://github.com/dustsoftware/thiserror.git?rev=41938bd3a03a70d34ed8e53d99c89c770c7c9c41#41938bd3a03a70d34ed8e53d99c89c770c7c9c41"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -439,70 +198,211 @@ dependencies = [
 ]
 
 [[package]]
-name = "time"
-version = "0.3.47"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "743bd48c283afc0388f9b8827b976905fb217ad9e647fae3a379a9283c4def2c"
-dependencies = [
- "deranged",
- "num-conv",
- "powerfmt",
- "serde_core",
- "time-core",
- "time-macros",
-]
-
-[[package]]
-name = "time-core"
-version = "0.1.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7694e1cfe791f8d31026952abf09c69ca6f6fa4e1a1229e18988f06a04a12dca"
-
-[[package]]
-name = "time-macros"
-version = "0.2.27"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e70e4c5a0e0a8a4823ad65dfe1a6930e4f4d756dcd9dd7939022b5e8c501215"
-dependencies = [
- "num-conv",
- "time-core",
-]
-
-[[package]]
 name = "unicode-ident"
-version = "1.0.23"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "537dd038a89878be9b64dd4bd1b260315c1bb94f4d784956b81e27a088d9a09e"
-
-[[package]]
-name = "utf8parse"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
-
-[[package]]
-name = "windows-link"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5"
-
-[[package]]
-name = "windows-sys"
-version = "0.61.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc"
-dependencies = [
- "windows-link",
-]
-
-[[package]]
-name = "yansi"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cfe53a6657fd280eaa890a3bc59152892ffa3e30101319d168b781ed6529b049"
+version = "1.0.24"
+source = "git+https://github.com/dustsoftware/unicode-ident.git?rev=5b54a632702b5744a1c40ea01c127c0ac0498172#5b54a632702b5744a1c40ea01c127c0ac0498172"
 
 [[package]]
 name = "zmij"
-version = "1.0.21"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8848ee67ecc8aedbaf3e4122217aff892639231befc6a1b58d29fff4c2cabaa"
+version = "1.0.19"
+source = "git+https://github.com/dustsoftware/zmij.git?rev=990ad7ec835af798afdebc4361a346775227953b#990ad7ec835af798afdebc4361a346775227953b"
+
+[[patch.unused]]
+name = "ahash"
+version = "0.8.10"
+source = "git+https://github.com/dustsoftware/aHash.git?rev=545a200b43fee2404c812d5d5c05c2734fb790bd#545a200b43fee2404c812d5d5c05c2734fb790bd"
+
+[[patch.unused]]
+name = "anyhow"
+version = "1.0.102"
+source = "git+https://github.com/dustsoftware/anyhow.git?rev=5c657b32522023a9f7ef883fb08582fd8e656b1a#5c657b32522023a9f7ef883fb08582fd8e656b1a"
+
+[[patch.unused]]
+name = "arbitrary"
+version = "1.4.2"
+source = "git+https://github.com/dustsoftware/arbitrary.git?rev=dc22fdefd5456a0f4d2f190c6d3e017e3c7ddd8e#dc22fdefd5456a0f4d2f190c6d3e017e3c7ddd8e"
+
+[[patch.unused]]
+name = "bumpalo"
+version = "3.20.2"
+source = "git+https://github.com/dustsoftware/bumpalo.git?rev=1aad072f93d8a4cf5885446ead554927c7c94f9c#1aad072f93d8a4cf5885446ead554927c7c94f9c"
+
+[[patch.unused]]
+name = "cfg-if"
+version = "1.0.4"
+source = "git+https://github.com/dustsoftware/cfg-if.git?rev=3510ca6abea34cbbc702509a4e50ea9709925eda#3510ca6abea34cbbc702509a4e50ea9709925eda"
+
+[[patch.unused]]
+name = "cranelift-bforest"
+version = "0.110.3"
+source = "git+https://github.com/dustsoftware/wasmtime.git?rev=72bedc12e00084fdf49f7d4f5d40b979c184b0a5#72bedc12e00084fdf49f7d4f5d40b979c184b0a5"
+
+[[patch.unused]]
+name = "cranelift-bitset"
+version = "0.110.3"
+source = "git+https://github.com/dustsoftware/wasmtime.git?rev=72bedc12e00084fdf49f7d4f5d40b979c184b0a5#72bedc12e00084fdf49f7d4f5d40b979c184b0a5"
+
+[[patch.unused]]
+name = "cranelift-codegen"
+version = "0.110.3"
+source = "git+https://github.com/dustsoftware/wasmtime.git?rev=72bedc12e00084fdf49f7d4f5d40b979c184b0a5#72bedc12e00084fdf49f7d4f5d40b979c184b0a5"
+
+[[patch.unused]]
+name = "cranelift-codegen-meta"
+version = "0.110.3"
+source = "git+https://github.com/dustsoftware/wasmtime.git?rev=72bedc12e00084fdf49f7d4f5d40b979c184b0a5#72bedc12e00084fdf49f7d4f5d40b979c184b0a5"
+
+[[patch.unused]]
+name = "cranelift-codegen-shared"
+version = "0.110.3"
+source = "git+https://github.com/dustsoftware/wasmtime.git?rev=72bedc12e00084fdf49f7d4f5d40b979c184b0a5#72bedc12e00084fdf49f7d4f5d40b979c184b0a5"
+
+[[patch.unused]]
+name = "cranelift-control"
+version = "0.110.3"
+source = "git+https://github.com/dustsoftware/wasmtime.git?rev=72bedc12e00084fdf49f7d4f5d40b979c184b0a5#72bedc12e00084fdf49f7d4f5d40b979c184b0a5"
+
+[[patch.unused]]
+name = "cranelift-entity"
+version = "0.110.3"
+source = "git+https://github.com/dustsoftware/wasmtime.git?rev=72bedc12e00084fdf49f7d4f5d40b979c184b0a5#72bedc12e00084fdf49f7d4f5d40b979c184b0a5"
+
+[[patch.unused]]
+name = "cranelift-frontend"
+version = "0.110.3"
+source = "git+https://github.com/dustsoftware/wasmtime.git?rev=72bedc12e00084fdf49f7d4f5d40b979c184b0a5#72bedc12e00084fdf49f7d4f5d40b979c184b0a5"
+
+[[patch.unused]]
+name = "cranelift-isle"
+version = "0.110.3"
+source = "git+https://github.com/dustsoftware/wasmtime.git?rev=72bedc12e00084fdf49f7d4f5d40b979c184b0a5#72bedc12e00084fdf49f7d4f5d40b979c184b0a5"
+
+[[patch.unused]]
+name = "cranelift-module"
+version = "0.110.3"
+source = "git+https://github.com/dustsoftware/wasmtime.git?rev=72bedc12e00084fdf49f7d4f5d40b979c184b0a5#72bedc12e00084fdf49f7d4f5d40b979c184b0a5"
+
+[[patch.unused]]
+name = "cranelift-object"
+version = "0.110.3"
+source = "git+https://github.com/dustsoftware/wasmtime.git?rev=72bedc12e00084fdf49f7d4f5d40b979c184b0a5#72bedc12e00084fdf49f7d4f5d40b979c184b0a5"
+
+[[patch.unused]]
+name = "crc32fast"
+version = "1.5.0"
+source = "git+https://github.com/dustsoftware/dust-crc32fast.git?rev=dbf4f76cd71cdcc57d9164cbd46890d53ce0423c#dbf4f76cd71cdcc57d9164cbd46890d53ce0423c"
+
+[[patch.unused]]
+name = "gimli"
+version = "0.28.1"
+source = "git+https://github.com/dustsoftware/gimli.git?rev=ee0262aff054b87270072a5ea9b254177edcc80f#ee0262aff054b87270072a5ea9b254177edcc80f"
+
+[[patch.unused]]
+name = "object"
+version = "0.36.7"
+source = "git+https://github.com/dustsoftware/object.git?rev=5b66b69298f6198f9d5b5bb2a0b284b4d920a92c#5b66b69298f6198f9d5b5bb2a0b284b4d920a92c"
+
+[[patch.unused]]
+name = "once_cell"
+version = "1.21.3"
+source = "git+https://github.com/dustsoftware/once_cell.git?rev=29e3d93cf0367fc6c295785b282b8101127a3e16#29e3d93cf0367fc6c295785b282b8101127a3e16"
+
+[[patch.unused]]
+name = "regalloc2"
+version = "0.9.3"
+source = "git+https://github.com/dustsoftware/regalloc2.git?rev=4777ec92df3b4e6f5f354af462f254630b70641e#4777ec92df3b4e6f5f354af462f254630b70641e"
+
+[[patch.unused]]
+name = "rustc-hash"
+version = "1.2.0"
+source = "git+https://github.com/dustsoftware/dustc-hash.git?rev=0773e83fddff56670e107134dbd9f12e6b6ecdf4#0773e83fddff56670e107134dbd9f12e6b6ecdf4"
+
+[[patch.unused]]
+name = "same-file"
+version = "1.0.6"
+source = "git+https://github.com/dustsoftware/same-file.git?rev=5799cd323b8eefd17a089c950dac113f66c89c9e#5799cd323b8eefd17a089c950dac113f66c89c9e"
+
+[[patch.unused]]
+name = "serde_spanned"
+version = "0.6.9"
+source = "git+https://github.com/dustsoftware/toml.git?rev=838a0223142a2137b530e020cb7231aba46f7946#838a0223142a2137b530e020cb7231aba46f7946"
+
+[[patch.unused]]
+name = "slice-group-by"
+version = "0.3.1"
+source = "git+https://github.com/dustsoftware/slice-group-by.git?rev=668ee8146c494b26f4c0d279bfc8b7999a0f19b3#668ee8146c494b26f4c0d279bfc8b7999a0f19b3"
+
+[[patch.unused]]
+name = "smallvec"
+version = "1.15.1"
+source = "git+https://github.com/dustsoftware/dust-smallvec.git?rev=d0f47a3ea99296498ee940b5d99f59b403c498a2#d0f47a3ea99296498ee940b5d99f59b403c498a2"
+
+[[patch.unused]]
+name = "stable_deref_trait"
+version = "1.2.1"
+source = "git+https://github.com/dustsoftware/stable_deref_trait.git?rev=30002b4228f7cdee309217b6bf6eee099dda0b00#30002b4228f7cdee309217b6bf6eee099dda0b00"
+
+[[patch.unused]]
+name = "target-lexicon"
+version = "0.12.16"
+source = "git+https://github.com/dustsoftware/target-lexicon.git?rev=7c80d459a9fdd121e9f23feb680c3db13c1baa39#7c80d459a9fdd121e9f23feb680c3db13c1baa39"
+
+[[patch.unused]]
+name = "toml"
+version = "0.8.23"
+source = "git+https://github.com/dustsoftware/toml.git?rev=838a0223142a2137b530e020cb7231aba46f7946#838a0223142a2137b530e020cb7231aba46f7946"
+
+[[patch.unused]]
+name = "toml_datetime"
+version = "0.6.11"
+source = "git+https://github.com/dustsoftware/toml.git?rev=838a0223142a2137b530e020cb7231aba46f7946#838a0223142a2137b530e020cb7231aba46f7946"
+
+[[patch.unused]]
+name = "toml_edit"
+version = "0.22.27"
+source = "git+https://github.com/dustsoftware/toml.git?rev=838a0223142a2137b530e020cb7231aba46f7946#838a0223142a2137b530e020cb7231aba46f7946"
+
+[[patch.unused]]
+name = "toml_write"
+version = "0.1.2"
+source = "git+https://github.com/dustsoftware/toml.git?rev=838a0223142a2137b530e020cb7231aba46f7946#838a0223142a2137b530e020cb7231aba46f7946"
+
+[[patch.unused]]
+name = "version_check"
+version = "0.9.5"
+source = "git+https://github.com/dustsoftware/version_check.git?rev=d77ef9f27cc336719b2d839d09ee6635dd22f758#d77ef9f27cc336719b2d839d09ee6635dd22f758"
+
+[[patch.unused]]
+name = "walkdir"
+version = "2.5.0"
+source = "git+https://github.com/dustsoftware/walkdir.git?rev=4f26be4d450910916ea11533b2efc52b9a6483bc#4f26be4d450910916ea11533b2efc52b9a6483bc"
+
+[[patch.unused]]
+name = "winapi-util"
+version = "0.1.10"
+source = "git+https://github.com/dustsoftware/winapi-util.git?rev=29a804c1a048429a4c35fd2c3f6b82f8495159df#29a804c1a048429a4c35fd2c3f6b82f8495159df"
+
+[[patch.unused]]
+name = "windows-link"
+version = "0.2.1"
+source = "git+https://github.com/dustsoftware/windows-ds.git?rev=d5939330cea022cf15bf2f2d0ec87ff97f108f03#d5939330cea022cf15bf2f2d0ec87ff97f108f03"
+
+[[patch.unused]]
+name = "windows-sys"
+version = "0.61.2"
+source = "git+https://github.com/dustsoftware/windows-ds.git?rev=d5939330cea022cf15bf2f2d0ec87ff97f108f03#d5939330cea022cf15bf2f2d0ec87ff97f108f03"
+
+[[patch.unused]]
+name = "winnow"
+version = "0.7.14"
+source = "git+https://github.com/dustsoftware/winnow.git?rev=faa62149eb96a07878bf66515c19af84df158c07#faa62149eb96a07878bf66515c19af84df158c07"
+
+[[patch.unused]]
+name = "zerocopy"
+version = "0.8.39"
+source = "git+https://github.com/dustsoftware/zerocopy.git?rev=e85ea41a646885f291902e707bee68215f88aa3b#e85ea41a646885f291902e707bee68215f88aa3b"
+
+[[patch.unused]]
+name = "zerocopy-derive"
+version = "0.8.39"
+source = "git+https://github.com/dustsoftware/zerocopy.git?rev=e85ea41a646885f291902e707bee68215f88aa3b#e85ea41a646885f291902e707bee68215f88aa3b"
